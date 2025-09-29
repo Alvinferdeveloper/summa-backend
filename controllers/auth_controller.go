@@ -47,12 +47,16 @@ func OAuthCallbackHandler(c *gin.Context) {
 		}
 
 		user = newUser
-	} else {
-		// If user exists, update their email in case it changed.
-		config.DB.Model(&user).Updates(models.User{Email: req.Email})
 	}
 
-	jwtToken, err := utils.GenerateJWT(user.ID)
+	// Fetch the user's profile to check onboarding status.
+	var profile models.Profile
+	if err := config.DB.Where("user_id = ?", user.ID).First(&profile).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not find user profile"})
+		return
+	}
+
+	jwtToken, err := utils.GenerateJWT(user.ID, profile.OnboardingCompleted)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
 		return

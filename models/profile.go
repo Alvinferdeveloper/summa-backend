@@ -7,6 +7,7 @@ type Profile struct {
 	UserID      uint   `json:"user_id" gorm:"column:user_id;unique;not null"`
 	FirstName   string `json:"first_name" gorm:"column:first_name"`
 	LastName    string `json:"last_name" gorm:"column:last_name"`
+	OnboardingCompleted bool   `json:"onboarding_completed" gorm:"column:onboarding_completed;default:false"`
 	PhoneNumber    string `json:"phone_number" gorm:"column:phone_number"`
 	City           string `json:"city" gorm:"column:city"`
 	Country        string `json:"country" gorm:"column:country"`

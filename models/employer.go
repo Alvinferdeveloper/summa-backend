@@ -8,6 +8,9 @@ type Employer struct {
 	CompanyName string `json:"company_name" gorm:"column:company_name;unique;not null"`
 	Website     string `json:"website" gorm:"column:website"`
 	LogoURL     string `json:"logo_url" gorm:"column:logo_url"`
+	DiversityInclusionPolicyURL string `json:"diversity_inclusion_policy_url" gorm:"column:diversity_inclusion_policy_url"`
+	InclusionStatement string `json:"inclusion_statement" gorm:"type:text"`
+	AccessibilityCertificationURL string `json:"accessibility_certification_url" gorm:"column:accessibility_certification_url"`
 
 	// Relationships
 	JobPositions []JobPosition `json:"job_positions,omitempty" gorm:"foreignKey:EmployerID"`

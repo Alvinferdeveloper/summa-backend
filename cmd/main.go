@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/Alvinferdeveloper/summa-backend/config"
+	"github.com/Alvinferdeveloper/summa-backend/routes"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -26,6 +27,11 @@ func main() {
 	}
 
 	r := gin.Default()
+
+	v1 := r.Group("/api/v1")
+	{
+		routes.SetupAuthRoutes(v1)
+	}
 
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{

@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 	"regexp"
+	"time"
 
 	"github.com/Alvinferdeveloper/summa-backend/models"
 	"github.com/Alvinferdeveloper/summa-backend/services"
@@ -11,10 +12,19 @@ import (
 	"gorm.io/gorm"
 )
 
+// EmployerRegisterRequest defines the request body for employer registration.
 type EmployerRegisterRequest struct {
-	CompanyName string `json:"company_name" binding:"required,min=3"`
-	Email       string `json:"email" binding:"required,email"`
-	Password    string `json:"password" binding:"required,min=8,max=60"` // Min 8 chars, max 60 for bcrypt
+	CompanyName    string `json:"company_name" binding:"required,min=3"`
+	Email          string `json:"email" binding:"required,email"`
+	Password       string `json:"password" binding:"required,min=8,max=60"` // Min 8 chars, max 60 for bcrypt
+	PhoneNumber    string `json:"phone_number"`
+	Country        string `json:"country"`
+	FoundationDate string `json:"foundation_date"` // String to parse into time.Time
+	Industry       string `json:"industry"`
+	Size           string `json:"size"`
+	Description    string `json:"description"`
+	Address        string `json:"address"`
+	Website        string `json:"website"`
 }
 
 type EmployerLoginRequest struct {
@@ -38,17 +48,36 @@ func RegisterEmployer(c *gin.Context) {
 		c.JSON(http.StatusConflict, gin.H{"error": "Email already registered"})
 		return
 	}
+
 	hashedPassword, err := services.HashPassword(req.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
 		return
 	}
 
+	var foundationDate *time.Time
+	if req.FoundationDate != "" {
+		parsedDate, err := time.Parse("2006-01-02", req.FoundationDate) // YYYY-MM-DD format
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid foundation_date format. Use YYYY-MM-DD."})
+			return
+		}
+		foundationDate = &parsedDate
+	}
+
 	employer := models.Employer{
-		CompanyName: req.CompanyName,
-		Email:       req.Email,
-		Password:    hashedPassword,
-		Role:        "employer",
+		CompanyName:    req.CompanyName,
+		Email:          req.Email,
+		Password:       hashedPassword,
+		Role:           "employer",
+		PhoneNumber:    req.PhoneNumber,
+		Country:        req.Country,
+		FoundationDate: foundationDate,
+		Industry:       req.Industry,
+		Size:           req.Size,
+		Description:    req.Description,
+		Address:        req.Address,
+		Website:        req.Website,
 	}
 
 	if err := services.CreateEmployer(&employer); err != nil {
@@ -56,13 +85,7 @@ func RegisterEmployer(c *gin.Context) {
 		return
 	}
 
-	token, err := utils.GenerateEmployerJWT(employer.ID, employer.Role)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
-		return
-	}
-
-	c.JSON(http.StatusCreated, gin.H{"message": "Employer registered successfully", "accessToken": token})
+	c.JSON(http.StatusCreated, gin.H{"message": "Employer registered successfully"})
 }
 
 func LoginEmployer(c *gin.Context) {
@@ -86,6 +109,7 @@ func LoginEmployer(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
+
 	token, err := utils.GenerateEmployerJWT(employer.ID, employer.Role)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})

@@ -43,6 +43,7 @@ func main() {
 	{
 		routes.SetupAuthRoutes(v1)
 		routes.SetupProfileRoutes(v1)
+		routes.SetupEmployerAuthRoutes(v1)
 	}
 
 	r.GET("/ping", func(c *gin.Context) {

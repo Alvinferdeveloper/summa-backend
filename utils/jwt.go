@@ -32,3 +32,27 @@ func GenerateJWT(userID uint, onboardingCompleted bool) (string, error) {
 
 	return t, nil
 }
+
+// GenerateEmployerJWT creates a new JWT for a given employer ID and role.
+func GenerateEmployerJWT(employerID uint, role string) (string, error) {
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		return "", fmt.Errorf("missing environment variable %q", "JWT_SECRET")
+	}
+
+	claims := jwt.MapClaims{
+		"employer_id": employerID,
+		"role":        role,
+		"exp":         time.Now().Add(time.Hour * 72).Unix(), // Token expires in 3 days
+		"iat":         time.Now().Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	t, err := token.SignedString([]byte(jwtSecret))
+	if err != nil {
+		return "", err
+	}
+
+	return t, nil
+}

@@ -62,5 +62,5 @@ func OAuthCallbackHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"accessToken": jwtToken})
+	c.JSON(http.StatusOK, gin.H{"accessToken": jwtToken, "onboarding_completed": profile.OnboardingCompleted})
 }

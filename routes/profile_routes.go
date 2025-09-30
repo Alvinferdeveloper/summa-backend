@@ -12,6 +12,6 @@ func SetupProfileRoutes(router *gin.RouterGroup) {
 
 	profile := router.Group("/profile")
 	{
-		profile.PUT("/", middlewares.AuthMiddleware(), controllers.CompleteOnboarding)
+		profile.PUT("", middlewares.AuthMiddleware(), controllers.CompleteOnboarding)
 	}
 }

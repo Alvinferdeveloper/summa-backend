@@ -10,6 +10,6 @@ type AccessibilityNeed struct {
 	Category string `json:"category" gorm:"column:category;not null"` // e.g., "Physical Environment", "Software", "Support"
 
 	// Relationships
-	Profiles     []Profile     `json:"-" gorm:"many2many:profile_accessibility_needs;"`
-	JobPositions []JobPosition `json:"-" gorm:"many2many:job_position_accessibility_features;"`
+	Profiles []Profile `json:"-" gorm:"many2many:profile_accessibility_needs;"`
+	JobPosts []JobPost `json:"-" gorm:"many2many:job_post_accessibility_features;"`
 }

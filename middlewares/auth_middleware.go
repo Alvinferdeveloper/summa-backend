@@ -11,7 +11,7 @@ import (
 )
 
 // AuthMiddleware validates the JWT and sets the user_id in the context.
-func AuthMiddleware() gin.HandlerFunc {
+func AuthMiddleware(allowedRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -41,13 +41,44 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-			userIDFloat, ok := claims["user_id"].(float64)
+			role, ok := claims["role"].(string)
 			if !ok {
-				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid user_id in token"})
+				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Invalid role in token"})
 				return
 			}
 
-			c.Set("user_id", uint(userIDFloat))
+			isAllowed := false
+			for _, allowedRole := range allowedRoles {
+				if role == allowedRole {
+					isAllowed = true
+					break
+				}
+			}
+			if !isAllowed {
+				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to access this resource"})
+				return
+			}
+
+			switch role {
+			case "job_seeker":
+				userIDFloat, ok := claims["user_id"].(float64)
+				if !ok {
+					c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid user_id in token"})
+					return
+				}
+				c.Set("user_id", uint(userIDFloat))
+			case "employer":
+				employerIDFloat, ok := claims["employer_id"].(float64)
+				if !ok {
+					c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid employer_id in token"})
+					return
+				}
+				c.Set("employer_id", uint(employerIDFloat))
+			default:
+				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Invalid or unsupported role"})
+				return
+			}
+
 			c.Next()
 		} else {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})

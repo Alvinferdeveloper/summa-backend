@@ -27,6 +27,6 @@ type Employer struct {
 	AccessibilityCertificationURL string     `json:"accessibility_certification_url" gorm:"column:accessibility_certification_url"`
 
 	// Relationships
-	JobPositions []JobPosition `json:"job_positions,omitempty" gorm:"foreignKey:EmployerID"`
-	Experiences  []Experience  `json:"-" gorm:"foreignKey:EmployerID"`
+	JobPosts    []JobPost    `json:"job_posts,omitempty" gorm:"foreignKey:EmployerID"`
+	Experiences []Experience `json:"-" gorm:"foreignKey:EmployerID"`
 }

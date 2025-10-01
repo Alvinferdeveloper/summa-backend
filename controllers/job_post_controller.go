@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/Alvinferdeveloper/summa-backend/config"
 	"github.com/Alvinferdeveloper/summa-backend/models"
@@ -57,4 +58,39 @@ func CreateJobPost(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"message": "Job post created successfully", "jobPost": jobPost})
+}
+
+func GetJobPosts(c *gin.Context) {
+	var page, limit int
+	page, _ = strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ = strconv.Atoi(c.DefaultQuery("limit", "10"))
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 10
+	}
+
+	offset := (page - 1) * limit
+
+	var jobPosts []models.JobPost
+	var total int64
+
+	config.DB.Model(&models.JobPost{}).Count(&total)
+
+	result := config.DB.Preload("Employer").Limit(limit).Offset(offset).Order("created_at desc").Find(&jobPosts)
+
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch job posts"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data":      jobPosts,
+		"total":     total,
+		"page":      page,
+		"limit":     limit,
+		"next_page": page*limit < int(total),
+	})
 }

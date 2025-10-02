@@ -8,7 +8,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-// GenerateJWT creates a new JWT for a given user ID and their onboarding status.
 func GenerateJWT(userID uint, onboardingCompleted bool) (string, error) {
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {

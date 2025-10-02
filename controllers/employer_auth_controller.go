@@ -3,37 +3,16 @@ package controllers
 import (
 	"net/http"
 	"regexp"
-	"time"
 
-	"github.com/Alvinferdeveloper/summa-backend/models"
+	"github.com/Alvinferdeveloper/summa-backend/dto"
 	"github.com/Alvinferdeveloper/summa-backend/services"
 	"github.com/Alvinferdeveloper/summa-backend/utils"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
-// EmployerRegisterRequest defines the request body for employer registration.
-type EmployerRegisterRequest struct {
-	CompanyName    string `json:"company_name" binding:"required,min=3"`
-	Email          string `json:"email" binding:"required,email"`
-	Password       string `json:"password" binding:"required,min=8,max=60"` // Min 8 chars, max 60 for bcrypt
-	PhoneNumber    string `json:"phone_number"`
-	Country        string `json:"country"`
-	FoundationDate string `json:"foundation_date"` // String to parse into time.Time
-	Industry       string `json:"industry"`
-	Size           string `json:"size"`
-	Description    string `json:"description"`
-	Address        string `json:"address"`
-	Website        string `json:"website"`
-}
-
-type EmployerLoginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
-}
-
 func RegisterEmployer(c *gin.Context) {
-	var req EmployerRegisterRequest
+	var req dto.EmployerRegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -49,30 +28,13 @@ func RegisterEmployer(c *gin.Context) {
 		return
 	}
 
-	hashedPassword, err := services.HashPassword(req.Password)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
-		return
-	}
-
-	var foundationDate *time.Time
-	if req.FoundationDate != "" {
-		parsedDate, err := time.Parse("2006-01-02", req.FoundationDate) // YYYY-MM-DD format
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid foundation_date format. Use YYYY-MM-DD."})
-			return
-		}
-		foundationDate = &parsedDate
-	}
-
-	employer := models.Employer{
+	input := dto.EmployerRegisterRequest{
 		CompanyName:    req.CompanyName,
 		Email:          req.Email,
-		Password:       hashedPassword,
-		Role:           "employer",
+		Password:       req.Password,
 		PhoneNumber:    req.PhoneNumber,
 		Country:        req.Country,
-		FoundationDate: foundationDate,
+		FoundationDate: req.FoundationDate,
 		Industry:       req.Industry,
 		Size:           req.Size,
 		Description:    req.Description,
@@ -80,7 +42,8 @@ func RegisterEmployer(c *gin.Context) {
 		Website:        req.Website,
 	}
 
-	if err := services.CreateEmployer(&employer); err != nil {
+	_, err := services.RegisterEmployer(&input)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to register employer"})
 		return
 	}
@@ -89,24 +52,19 @@ func RegisterEmployer(c *gin.Context) {
 }
 
 func LoginEmployer(c *gin.Context) {
-	var req EmployerLoginRequest
+	var req dto.EmployerLoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	employer, err := services.FindEmployerByEmail(req.Email)
+	employer, err := services.LoginEmployer(req.Email, req.Password)
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if err == gorm.ErrRecordNotFound || err == gorm.ErrInvalidData {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to find employer"})
-		return
-	}
-
-	if !services.CheckPasswordHash(req.Password, employer.Password) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "An unexpected error occurred"})
 		return
 	}
 

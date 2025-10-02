@@ -3,20 +3,17 @@ package controllers
 import (
 	"net/http"
 
-	"github.com/Alvinferdeveloper/summa-backend/config"
-	"github.com/Alvinferdeveloper/summa-backend/models"
+	"github.com/Alvinferdeveloper/summa-backend/services"
 	"github.com/Alvinferdeveloper/summa-backend/utils"
 	"github.com/gin-gonic/gin"
 )
 
-// OAuthRequest defines the expected request body from any OAuth callback.
 type OAuthRequest struct {
 	Provider   string `json:"provider" binding:"required"`
 	ProviderID string `json:"provider_id" binding:"required"`
 	Email      string `json:"email" binding:"required,email"`
 }
 
-// OAuthCallbackHandler handles the sign-in/sign-up logic for users via any OAuth provider.
 func OAuthCallbackHandler(c *gin.Context) {
 	var req OAuthRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -24,35 +21,9 @@ func OAuthCallbackHandler(c *gin.Context) {
 		return
 	}
 
-	var user models.User
-	result := config.DB.Where(models.User{Provider: req.Provider, ProviderID: req.ProviderID}).First(&user)
-
-	if result.Error != nil {
-		newUser := models.User{
-			Provider:   req.Provider,
-			ProviderID: req.ProviderID,
-			Email:      req.Email,
-		}
-
-		createResult := config.DB.Create(&newUser)
-		if createResult.Error != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
-			return
-		}
-
-		profile := models.Profile{UserID: newUser.ID}
-		if err := config.DB.Create(&profile).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user profile"})
-			return
-		}
-
-		user = newUser
-	}
-
-	// Fetch the user's profile to check onboarding status.
-	var profile models.Profile
-	if err := config.DB.Where("user_id = ?", user.ID).First(&profile).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not find user profile"})
+	user, profile, err := services.FindOrCreateUser(req.Provider, req.ProviderID, req.Email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process user information"})
 		return
 	}
 

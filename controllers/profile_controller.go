@@ -38,3 +38,19 @@ func GetDisabilityTypes(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, disabilityTypes)
 }
+
+func GetMyProfile(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	profile, err := services.GetFullProfile(userID.(uint))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Profile not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, profile)
+}

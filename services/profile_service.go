@@ -39,3 +39,17 @@ func GetDisabilityTypes() ([]models.DisabilityType, error) {
 	}
 	return disabilityTypes, nil
 }
+
+func GetFullProfile(userID uint) (*models.Profile, error) {
+	var profile models.Profile
+	if err := config.DB.Where("user_id = ?", userID).
+		Preload("Skills").
+		Preload("Experiences.Employer").
+		Preload("Educations.University").
+		Preload("DisabilityTypes").
+		Preload("AccessibilityNeeds").
+		First(&profile).Error; err != nil {
+		return nil, err
+	}
+	return &profile, nil
+}

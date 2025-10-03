@@ -1,6 +1,7 @@
 package services
 
 import (
+	"strings"
 	"time"
 
 	"github.com/Alvinferdeveloper/summa-backend/config"
@@ -63,4 +64,12 @@ func FindEmployerByEmail(email string) (*models.Employer, error) {
 		return nil, err
 	}
 	return &employer, nil
+}
+
+func SearchEmployers(query string) ([]models.Employer, error) {
+	var employers []models.Employer
+	if err := config.DB.Where("LOWER(company_name) LIKE ?", "%"+strings.ToLower(query)+"%").Find(&employers).Error; err != nil {
+		return nil, err
+	}
+	return employers, nil
 }

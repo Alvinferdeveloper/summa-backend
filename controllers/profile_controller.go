@@ -157,29 +157,6 @@ func UpdateDisabilityInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Disability info updated successfully"})
 }
 
-// CreateExperience handles creating a new experience for a profile.
-func CreateExperience(c *gin.Context) {
-	userID, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
-
-	var req dto.CreateExperienceRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	_, err := services.CreateExperience(userID.(uint), &req)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create experience"})
-		return
-	}
-
-	c.JSON(http.StatusCreated, gin.H{"message": "Experience created successfully"})
-}
-
 // UpdateExperience handles updating an existing experience for a profile.
 func UpdateExperience(c *gin.Context) {
 	userID, exists := c.Get("user_id")
@@ -342,4 +319,27 @@ func UpdateSkills(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Skills updated successfully"})
+}
+
+// SuggestNewEmployer handles a job seeker's request to suggest a new employer.
+func SuggestNewEmployer(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	var req dto.SuggestNewEmployerRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	newEmployer, err := services.SuggestNewEmployer(userID.(uint), &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to suggest new employer"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"message": "Employer suggestion created successfully", "new_employer": newEmployer})
 }

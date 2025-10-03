@@ -191,8 +191,8 @@ func seedEmployers(db *gorm.DB) ([]models.Employer, error) {
 	fmt.Println("Seeding Employers...")
 	hashedPassword, _ := utils.HashPassword("Password123!")
 	employers := []models.Employer{
-		{CompanyName: "Tech Solutions Inc.", Email: "employer1@example.com", Password: hashedPassword, Role: "employer", Website: "https://techsolutions.com"},
-		{CompanyName: "Innovate Corp.", Email: "employer2@example.com", Password: hashedPassword, Role: "employer", Website: "https://innovate.com"},
+		{CompanyName: "Tech Solutions Inc.", Email: "employer1@example.com", Password: hashedPassword, Role: "employer", Website: "https://techsolutions.com", Dedication: "Desarrollo de software"},
+		{CompanyName: "Innovate Corp.", Email: "employer2@example.com", Password: hashedPassword, Role: "employer", Website: "https://innovate.com", Dedication: "Innovación en tecnología"},
 	}
 	for i := range employers {
 		if err := db.FirstOrCreate(&employers[i], models.Employer{Email: employers[i].Email}).Error; err != nil {

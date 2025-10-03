@@ -28,15 +28,6 @@ type UpdateDisabilityInfoRequest struct {
 	AccessibilityNeedIDs   []uint `json:"accessibility_need_ids"`
 }
 
-type CreateExperienceRequest struct {
-	EmployerID    *uint      `json:"employer_id"`
-	NewEmployerID *uint      `json:"new_employer_id"`
-	JobTitle      string     `json:"job_title" binding:"required"`
-	Description   string     `json:"description"`
-	StartDate     time.Time  `json:"start_date" binding:"required"`
-	EndDate       *time.Time `json:"end_date"`
-}
-
 type UpdateExperienceRequest struct {
 	EmployerID    *uint      `json:"employer_id"`
 	NewEmployerID *uint      `json:"new_employer_id"`
@@ -66,4 +57,10 @@ type UpdateEducationRequest struct {
 
 type UpdateSkillsRequest struct {
 	SkillNames []string `json:"skill_names" binding:"required,min=1"`
+}
+
+// SuggestNewEmployerRequest defines the data for suggesting a new employer.
+type SuggestNewEmployerRequest struct {
+	CompanyName string `json:"company_name" binding:"required"`
+	Website     string `json:"website"`
 }

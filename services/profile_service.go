@@ -254,3 +254,18 @@ func UpdateSkills(profileID uint, req *dto.UpdateSkillsRequest) (*models.Profile
 	}
 	return &profile, nil
 }
+
+// SuggestNewEmployer creates a new employer suggestion.
+func SuggestNewEmployer(userID uint, req *dto.SuggestNewEmployerRequest) (*models.NewEmployer, error) {
+	newEmployer := &models.NewEmployer{
+		CompanyName: req.CompanyName,
+		Website:     req.Website,
+		SuggestedBy: userID,
+		Status:      "pending", // Default status
+	}
+
+	if err := config.DB.Create(newEmployer).Error; err != nil {
+		return nil, err
+	}
+	return newEmployer, nil
+}

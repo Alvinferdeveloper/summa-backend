@@ -19,6 +19,7 @@ type Employer struct {
 	Industry                      string     `json:"industry" gorm:"column:industry"`
 	Size                          string     `json:"size" gorm:"column:size"` // e.g., "1-10", "11-50", "51-200", "201-500", "500+"
 	Description                   string     `json:"description" gorm:"type:text"`
+	Dedication                    string     `json:"dedication" gorm:"column:dedication"`
 	Address                       string     `json:"address" gorm:"column:address"`
 	Website                       string     `json:"website" gorm:"column:website"`
 	LogoURL                       string     `json:"logo_url" gorm:"column:logo_url"`

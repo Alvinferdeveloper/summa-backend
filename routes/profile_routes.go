@@ -30,5 +30,8 @@ func SetupProfileRoutes(router *gin.RouterGroup) {
 		profile.POST("/educations", controllers.CreateEducation)
 		profile.PUT("/educations/:id", controllers.UpdateEducation)
 		profile.DELETE("/educations/:id", controllers.DeleteEducation)
+
+		// New Employer Suggestion
+		profile.POST("/new-employer-suggestion", controllers.SuggestNewEmployer)
 	}
 }

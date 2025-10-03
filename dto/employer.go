@@ -10,6 +10,7 @@ type EmployerRegisterRequest struct {
 	Industry       string `json:"industry"`
 	Size           string `json:"size"`
 	Description    string `json:"description"`
+	Dedication     string `json:"dedication"`
 	Address        string `json:"address"`
 	Website        string `json:"website"`
 }

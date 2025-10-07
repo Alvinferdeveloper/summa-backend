@@ -14,3 +14,11 @@ type EmployerRegisterRequest struct {
 	Address        string `json:"address"`
 	Website        string `json:"website"`
 }
+
+type EmployerResponse struct {
+	ID          uint   `json:"ID"`
+	CompanyName string `json:"company_name"`
+	LogoURL     string `json:"logo_url"`
+	Industry    string `json:"industry"`
+	Email       string `json:"email"`
+}

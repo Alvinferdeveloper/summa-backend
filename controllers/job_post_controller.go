@@ -32,8 +32,9 @@ func CreateJobPost(c *gin.Context) {
 }
 
 func GetJobPosts(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	var page, limit int
+	page, _ = strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ = strconv.Atoi(c.DefaultQuery("limit", "10"))
 
 	if page < 1 {
 		page = 1
@@ -42,17 +43,37 @@ func GetJobPosts(c *gin.Context) {
 		limit = 10
 	}
 
-	jobPosts, total, err := services.ListJobPosts(page, limit)
+	jobPostDTOs, total, hasNextPage, err := services.GetJobPosts(page, limit)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch job posts"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"data":      jobPosts,
+		"data":      jobPostDTOs,
 		"total":     total,
 		"page":      page,
 		"limit":     limit,
-		"next_page": page*limit < int(total),
+		"next_page": hasNextPage,
 	})
+}
+
+func GetJobPostById(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de empleo inválido"})
+		return
+	}
+
+	jobPostDTO, err := services.GetJobPostById(uint(id))
+	if err != nil {
+		if err.Error() == "job post not found" {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Oferta de empleo no encontrada"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener la oferta de empleo"})
+		return
+	}
+
+	c.JSON(http.StatusOK, jobPostDTO)
 }

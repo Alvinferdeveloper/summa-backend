@@ -47,6 +47,7 @@ func main() {
 		routes.SetupJobPostRoutes(v1)
 		routes.SetupEmployerRoutes(v1)
 		routes.SetupExperienceRoutes(v1)
+		routes.SetupJobApplicationRoutes(v1)
 	}
 
 	r.GET("/ping", func(c *gin.Context) {

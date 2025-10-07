@@ -14,7 +14,7 @@ func SetupProfileRoutes(router *gin.RouterGroup) {
 	profile.Use(middlewares.AuthMiddleware("job_seeker"))
 	{
 		profile.GET("/me", controllers.GetMyProfile)
-		profile.PUT("/", controllers.CompleteOnboarding)
+		profile.PUT("", controllers.CompleteOnboarding)
 		profile.PUT("/personal-info", controllers.UpdatePersonalInfo)
 		profile.PUT("/contact-info", controllers.UpdateContactInfo)
 		profile.PUT("/description", controllers.UpdateDescription)

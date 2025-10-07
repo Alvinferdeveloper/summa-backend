@@ -69,3 +69,17 @@ func GetJobPostById(id uint) (*dto.JobPostResponse, error) {
 	jobPostDTO := dto.ConvertJobPostToDTO(jobPost)
 	return &jobPostDTO, nil
 }
+
+func GetJobPostsByEmployerID(employerID uint) ([]dto.JobPostResponse, error) {
+	var jobPosts []models.JobPost
+	if err := config.DB.Preload("Employer").Where("employer_id = ?", employerID).Order("created_at desc").Find(&jobPosts).Error; err != nil {
+		return nil, fmt.Errorf("failed to fetch employer job posts: %w", err)
+	}
+
+	var jobPostDTOs []dto.JobPostResponse
+	for _, jobPost := range jobPosts {
+		jobPostDTOs = append(jobPostDTOs, dto.ConvertJobPostToDTO(jobPost))
+	}
+
+	return jobPostDTOs, nil
+}

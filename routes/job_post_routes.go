@@ -13,4 +13,9 @@ func SetupJobPostRoutes(router *gin.RouterGroup) {
 		jobPost.GET("", controllers.GetJobPosts)
 		jobPost.GET("/:id", controllers.GetJobPostById)
 	}
+
+	employerRoutes := router.Group("/employer")
+	{
+		employerRoutes.GET("/jobs", middlewares.AuthMiddleware("employer"), controllers.GetEmployerJobPosts)
+	}
 }

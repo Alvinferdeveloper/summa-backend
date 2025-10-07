@@ -6,6 +6,7 @@ import (
 
 	"github.com/Alvinferdeveloper/summa-backend/config"
 	"github.com/Alvinferdeveloper/summa-backend/models"
+	"github.com/Alvinferdeveloper/summa-backend/services"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -86,4 +87,36 @@ func GetMyApplications(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, applications)
+}
+
+func GetJobApplicants(c *gin.Context) {
+	employerID, exists := c.Get("employer_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	jobID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de empleo inválido"})
+		return
+	}
+
+	var jobPost models.JobPost
+	if err := config.DB.Where("id = ? AND employer_id = ?", jobID, employerID).First(&jobPost).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Oferta de empleo no encontrada o no te pertenece"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al verificar la oferta de empleo"})
+		return
+	}
+
+	applicationDTOs, err := services.GetJobApplicants(uint(jobID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, applicationDTOs)
 }

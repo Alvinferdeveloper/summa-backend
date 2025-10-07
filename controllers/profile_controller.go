@@ -343,3 +343,29 @@ func SuggestNewEmployer(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, gin.H{"message": "Employer suggestion created successfully", "new_employer": newEmployer})
 }
+
+func GetCandidateProfileForEmployer(c *gin.Context) {
+	_, exists := c.Get("employer_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: Only employers can view candidate profiles"})
+		return
+	}
+
+	profileID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de perfil inválido"})
+		return
+	}
+
+	profileDTO, err := services.GetFullProfileByID(uint(profileID))
+	if err != nil {
+		if err.Error() == "profile not found" {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Perfil de candidato no encontrado"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener el perfil del candidato"})
+		return
+	}
+
+	c.JSON(http.StatusOK, profileDTO)
+}

@@ -59,21 +59,33 @@ func GetJobPosts(c *gin.Context) {
 }
 
 func GetJobPostById(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
+	jobID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de empleo inválido"})
 		return
 	}
 
-	jobPostDTO, err := services.GetJobPostById(uint(id))
+	jobPostDTO, err := services.GetJobPostById(uint(jobID))
 	if err != nil {
-		if err.Error() == "job post not found" {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Oferta de empleo no encontrada"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener la oferta de empleo"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, jobPostDTO)
+}
+
+func GetEmployerJobPosts(c *gin.Context) {
+	employerID, exists := c.Get("employer_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	jobPostDTOs, err := services.GetJobPostsByEmployerID(employerID.(uint))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, jobPostDTOs)
 }

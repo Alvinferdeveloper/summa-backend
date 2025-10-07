@@ -34,4 +34,10 @@ func SetupProfileRoutes(router *gin.RouterGroup) {
 		// New Employer Suggestion
 		profile.POST("/new-employer-suggestion", controllers.SuggestNewEmployer)
 	}
+
+	// Rutas para que los empleadores vean perfiles de candidatos
+	applicants := router.Group("/applicants")
+	{
+		applicants.GET("/:id/profile", middlewares.AuthMiddleware("employer"), controllers.GetCandidateProfileForEmployer)
+	}
 }

@@ -48,6 +48,8 @@ func main() {
 		routes.SetupEmployerRoutes(v1)
 		routes.SetupExperienceRoutes(v1)
 		routes.SetupJobApplicationRoutes(v1)
+		routes.SetupUniversityRoutes(v1)
+		routes.SetupUniversitySuggestionRoutes(v1)
 	}
 
 	r.GET("/ping", func(c *gin.Context) {

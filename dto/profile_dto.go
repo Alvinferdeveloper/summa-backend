@@ -123,8 +123,9 @@ type NewEmployerSummaryResponse struct {
 	CompanyName string `json:"company_name"`
 }
 type UniversitySummaryResponse struct {
-	ID   uint   `json:"id"`
-	Name string `json:"name"`
+	ID      uint   `json:"id"`
+	Name    string `json:"name"`
+	Address string `json:"address"`
 }
 type UniversitySuggestionSummaryResponse struct {
 	ID            uint   `json:"id"`
@@ -168,8 +169,9 @@ func ConvertProfileToFullDTO(profile models.Profile) FullProfileResponseDTO {
 		}
 		if edu.University != nil {
 			educations[i].University = &UniversitySummaryResponse{
-				ID:   edu.University.ID,
-				Name: edu.University.Name,
+				ID:      edu.University.ID,
+				Name:    edu.University.Name,
+				Address: edu.University.Address,
 			}
 		}
 		if edu.UniversitySuggestion != nil {

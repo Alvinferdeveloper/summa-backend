@@ -9,6 +9,6 @@ import (
 func SetupUniversitySuggestionRoutes(router *gin.RouterGroup) {
 	suggestion := router.Group("/university-suggestions")
 	{
-		suggestion.POST("/", middlewares.AuthMiddleware("job_seeker"), controllers.CreateUniversitySuggestion)
+		suggestion.POST("", middlewares.AuthMiddleware("job_seeker"), controllers.CreateUniversitySuggestion)
 	}
 }

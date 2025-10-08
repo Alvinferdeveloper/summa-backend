@@ -4,11 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Alvinferdeveloper/summa-backend/config"
-	"github.com/Alvinferdeveloper/summa-backend/models"
+	"github.com/Alvinferdeveloper/summa-backend/dto"
 	"github.com/Alvinferdeveloper/summa-backend/services"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 type ApplyToJobRequest struct {
@@ -28,20 +26,9 @@ func ApplyToJob(c *gin.Context) {
 		return
 	}
 
-	var profile models.Profile
-	if err := config.DB.Where("user_id = ?", userID).First(&profile).Error; err != nil {
+	profile, err := services.GetFullProfile(userID.(uint))
+	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Perfil de candidato no encontrado"})
-		return
-	}
-
-	var existingApplication models.JobApplication
-	err = config.DB.Where("profile_id = ? AND job_post_id = ?", profile.ID, jobID).First(&existingApplication).Error
-	if err == nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "Ya has postulado a este empleo"})
-		return
-	}
-	if err != gorm.ErrRecordNotFound {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al verificar la postulación"})
 		return
 	}
 
@@ -51,16 +38,9 @@ func ApplyToJob(c *gin.Context) {
 		return
 	}
 
-	application := models.JobApplication{
-		ProfileID:              profile.ID,
-		JobPostID:              uint(jobID),
-		Status:                 "Postulado",
-		CoverLetter:            req.CoverLetter,
-		ResumeURLAtApplication: profile.ResumeURL,
-	}
-
-	if err := config.DB.Create(&application).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo procesar la postulación"})
+	_, err = services.CreateJobApplication(profile, uint(jobID), req.CoverLetter)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -74,19 +54,24 @@ func GetMyApplications(c *gin.Context) {
 		return
 	}
 
-	var profile models.Profile
-	if err := config.DB.Where("user_id = ?", userID).First(&profile).Error; err != nil {
+	profile, err := services.GetFullProfile(userID.(uint))
+	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Perfil de candidato no encontrado"})
 		return
 	}
 
-	var applications []models.JobApplication
-	if err := config.DB.Preload("JobPost.Employer").Where("profile_id = ?", profile.ID).Order("created_at desc").Find(&applications).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener las postulaciones"})
+	applications, err := services.GetMyApplications(profile.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, applications)
+	var applicationDTOs []dto.JobApplicationResponse
+	for _, app := range applications {
+		applicationDTOs = append(applicationDTOs, dto.ConvertJobApplicationToDTO(app))
+	}
+
+	c.JSON(http.StatusOK, applicationDTOs)
 }
 
 func GetJobApplicants(c *gin.Context) {
@@ -102,20 +87,15 @@ func GetJobApplicants(c *gin.Context) {
 		return
 	}
 
-	var jobPost models.JobPost
-	if err := config.DB.Where("id = ? AND employer_id = ?", jobID, employerID).First(&jobPost).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Oferta de empleo no encontrada o no te pertenece"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al verificar la oferta de empleo"})
-		return
-	}
-
-	applicationDTOs, err := services.GetJobApplicants(uint(jobID))
+	applications, err := services.GetJobApplicants(uint(jobID), employerID.(uint))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}
+
+	var applicationDTOs []dto.JobApplicationResponse
+	for _, app := range applications {
+		applicationDTOs = append(applicationDTOs, dto.ConvertJobApplicationToDTO(app))
 	}
 
 	c.JSON(http.StatusOK, applicationDTOs)

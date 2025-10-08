@@ -28,7 +28,9 @@ func CreateJobPost(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Job post created successfully", "jobPost": jobPost})
+	jobPostDTO := dto.ConvertJobPostToDTO(*jobPost)
+
+	c.JSON(http.StatusCreated, gin.H{"message": "Job post created successfully", "jobPost": jobPostDTO})
 }
 
 func GetJobPosts(c *gin.Context) {
@@ -43,10 +45,15 @@ func GetJobPosts(c *gin.Context) {
 		limit = 10
 	}
 
-	jobPostDTOs, total, hasNextPage, err := services.GetJobPosts(page, limit)
+	jobPost, total, hasNextPage, err := services.GetJobPosts(page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}
+
+	var jobPostDTOs []dto.JobPostResponse
+	for _, jobPost := range jobPost {
+		jobPostDTOs = append(jobPostDTOs, dto.ConvertJobPostToDTO(jobPost))
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -65,11 +72,13 @@ func GetJobPostById(c *gin.Context) {
 		return
 	}
 
-	jobPostDTO, err := services.GetJobPostById(uint(jobID))
+	jobPost, err := services.GetJobPostById(uint(jobID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	jobPostDTO := dto.ConvertJobPostToDTO(*jobPost)
 
 	c.JSON(http.StatusOK, jobPostDTO)
 }
@@ -81,10 +90,15 @@ func GetEmployerJobPosts(c *gin.Context) {
 		return
 	}
 
-	jobPostDTOs, err := services.GetJobPostsByEmployerID(employerID.(uint))
+	jobPost, err := services.GetJobPostsByEmployerID(employerID.(uint))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}
+
+	var jobPostDTOs []dto.JobPostResponse
+	for _, jobPost := range jobPost {
+		jobPostDTOs = append(jobPostDTOs, dto.ConvertJobPostToDTO(jobPost))
 	}
 
 	c.JSON(http.StatusOK, jobPostDTOs)

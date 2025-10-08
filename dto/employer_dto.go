@@ -1,5 +1,9 @@
 package dto
 
+import (
+	"github.com/Alvinferdeveloper/summa-backend/models"
+)
+
 type EmployerRegisterRequest struct {
 	CompanyName    string `json:"company_name" binding:"required,min=3"`
 	Email          string `json:"email" binding:"required,email"`
@@ -15,10 +19,20 @@ type EmployerRegisterRequest struct {
 	Website        string `json:"website"`
 }
 
-type EmployerResponse struct {
-	ID          uint   `json:"ID"`
+type EmployerResponseDTO struct {
+	ID          uint   `json:"id"`
 	CompanyName string `json:"company_name"`
 	LogoURL     string `json:"logo_url"`
 	Industry    string `json:"industry"`
 	Email       string `json:"email"`
+}
+
+func ConvertEmployerToDTO(employer models.Employer) *EmployerResponseDTO {
+	return &EmployerResponseDTO{
+		ID:          employer.ID,
+		CompanyName: employer.CompanyName,
+		LogoURL:     employer.LogoURL,
+		Industry:    employer.Industry,
+		Email:       employer.Email,
+	}
 }

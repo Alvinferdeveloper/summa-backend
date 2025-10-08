@@ -38,7 +38,16 @@ func GetDisabilityTypes(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch disability types"})
 		return
 	}
-	c.JSON(http.StatusOK, disabilityTypes)
+
+	var disabilityTypesDTO []dto.DisabilityTypeResponse
+	for _, disabilityType := range disabilityTypes {
+		disabilityTypesDTO = append(disabilityTypesDTO, dto.DisabilityTypeResponse{
+			ID:          disabilityType.ID,
+			Name:        disabilityType.Name,
+			Description: disabilityType.Description,
+		})
+	}
+	c.JSON(http.StatusOK, disabilityTypesDTO)
 }
 
 func GetMyProfile(c *gin.Context) {
@@ -54,7 +63,9 @@ func GetMyProfile(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, profile)
+	profileDTO := dto.ConvertProfileToFullDTO(*profile)
+
+	c.JSON(http.StatusOK, profileDTO)
 }
 func GetAccessibilityNeeds(c *gin.Context) {
 	accessibilityNeeds, err := services.GetAccessibilityNeeds()
@@ -62,7 +73,15 @@ func GetAccessibilityNeeds(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch accessibility needs"})
 		return
 	}
-	c.JSON(http.StatusOK, accessibilityNeeds)
+
+	var accessibilityNeedsDTO []dto.AccessibilityNeedResponse
+	for _, accessibilityNeed := range accessibilityNeeds {
+		accessibilityNeedsDTO = append(accessibilityNeedsDTO, dto.AccessibilityNeedResponse{
+			ID:   accessibilityNeed.ID,
+			Name: accessibilityNeed.Name,
+		})
+	}
+	c.JSON(http.StatusOK, accessibilityNeedsDTO)
 }
 
 // UpdatePersonalInfo handles updating the basic personal information of a profile.
@@ -340,8 +359,14 @@ func SuggestNewEmployer(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to suggest new employer"})
 		return
 	}
+	newEmployerResponseDTO := dto.NewEmployerResponseDTO{
+		ID:          newEmployer.ID,
+		CompanyName: newEmployer.CompanyName,
+		Website:     newEmployer.Website,
+		Status:      newEmployer.Status,
+	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Employer suggestion created successfully", "new_employer": newEmployer})
+	c.JSON(http.StatusCreated, gin.H{"message": "Employer suggestion created successfully", "new_employer": newEmployerResponseDTO})
 }
 
 func GetCandidateProfileForEmployer(c *gin.Context) {
@@ -357,7 +382,7 @@ func GetCandidateProfileForEmployer(c *gin.Context) {
 		return
 	}
 
-	profileDTO, err := services.GetFullProfileByID(uint(profileID))
+	profile, err := services.GetFullProfileByID(uint(profileID))
 	if err != nil {
 		if err.Error() == "profile not found" {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Perfil de candidato no encontrado"})
@@ -367,5 +392,6 @@ func GetCandidateProfileForEmployer(c *gin.Context) {
 		return
 	}
 
+	profileDTO := dto.ConvertProfileToFullDTO(*profile)
 	c.JSON(http.StatusOK, profileDTO)
 }

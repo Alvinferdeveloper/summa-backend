@@ -6,6 +6,7 @@ import (
 	"github.com/Alvinferdeveloper/summa-backend/config"
 	"github.com/Alvinferdeveloper/summa-backend/dto"
 	"github.com/Alvinferdeveloper/summa-backend/models"
+	"github.com/Alvinferdeveloper/summa-backend/services"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,18 +19,12 @@ func CreateNewEmployer(c *gin.Context) {
 		return
 	}
 
-	newEmployer := models.NewEmployer{
-		CompanyName: req.CompanyName,
-		Website:     req.Website,
-		SuggestedBy: userID.(uint),
-	}
-
-	if err := config.DB.Create(&newEmployer).Error; err != nil {
+	if err := services.CreateNewEmployer(&req, userID.(uint)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo crear la sugerencia de empresa"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, newEmployer)
+	c.JSON(http.StatusCreated, gin.H{"message": "Sugerencia de empresa creada exitosamente"})
 }
 
 func CreateExperience(c *gin.Context) {
@@ -47,20 +42,13 @@ func CreateExperience(c *gin.Context) {
 		return
 	}
 
-	experience := models.Experience{
-		ProfileID:     profile.ID,
-		JobTitle:      req.JobTitle,
-		Description:   req.Description,
-		StartDate:     req.StartDate,
-		EndDate:       req.EndDate,
-		EmployerID:    req.EmployerID,
-		NewEmployerID: req.NewEmployerID,
-	}
-
-	if err := config.DB.Create(&experience).Error; err != nil {
+	experience, err := services.CreateExperience(profile.ID, &req)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo crear la experiencia"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, experience)
+	experienceDTO := dto.ConvertExperienceToDTO(*experience)
+
+	c.JSON(http.StatusCreated, experienceDTO)
 }

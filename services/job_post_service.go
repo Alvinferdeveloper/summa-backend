@@ -35,7 +35,7 @@ func CreateJobPost(req *dto.CreateJobPostRequest, employerID uint) (*models.JobP
 	return &jobPost, nil
 }
 
-func GetJobPosts(page, limit int) ([]dto.JobPostResponse, int64, bool, error) {
+func GetJobPosts(page, limit int) ([]models.JobPost, int64, bool, error) {
 	offset := (page - 1) * limit
 
 	var jobPosts []models.JobPost
@@ -49,15 +49,10 @@ func GetJobPosts(page, limit int) ([]dto.JobPostResponse, int64, bool, error) {
 		return nil, 0, false, fmt.Errorf("failed to fetch job posts: %w", result.Error)
 	}
 
-	var jobPostDTOs []dto.JobPostResponse
-	for _, jobPost := range jobPosts {
-		jobPostDTOs = append(jobPostDTOs, dto.ConvertJobPostToDTO(jobPost))
-	}
-
-	return jobPostDTOs, total, page*limit < int(total), nil
+	return jobPosts, total, page*limit < int(total), nil
 }
 
-func GetJobPostById(id uint) (*dto.JobPostResponse, error) {
+func GetJobPostById(id uint) (*models.JobPost, error) {
 	var jobPost models.JobPost
 	if err := config.DB.Preload("Employer").First(&jobPost, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -66,20 +61,14 @@ func GetJobPostById(id uint) (*dto.JobPostResponse, error) {
 		return nil, fmt.Errorf("failed to fetch job post: %w", err)
 	}
 
-	jobPostDTO := dto.ConvertJobPostToDTO(jobPost)
-	return &jobPostDTO, nil
+	return &jobPost, nil
 }
 
-func GetJobPostsByEmployerID(employerID uint) ([]dto.JobPostResponse, error) {
+func GetJobPostsByEmployerID(employerID uint) ([]models.JobPost, error) {
 	var jobPosts []models.JobPost
 	if err := config.DB.Preload("Employer").Where("employer_id = ?", employerID).Order("created_at desc").Find(&jobPosts).Error; err != nil {
 		return nil, fmt.Errorf("failed to fetch employer job posts: %w", err)
 	}
 
-	var jobPostDTOs []dto.JobPostResponse
-	for _, jobPost := range jobPosts {
-		jobPostDTOs = append(jobPostDTOs, dto.ConvertJobPostToDTO(jobPost))
-	}
-
-	return jobPostDTOs, nil
+	return jobPosts, nil
 }

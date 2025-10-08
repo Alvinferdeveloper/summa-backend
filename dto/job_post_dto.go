@@ -6,20 +6,30 @@ import (
 	"github.com/Alvinferdeveloper/summa-backend/models"
 )
 
-// JobPostResponse represents the data structure of a job post for the API.
+type CreateJobPostRequest struct {
+	Title                 string   `json:"title" binding:"required"`
+	Location              string   `json:"location" binding:"required"`
+	WorkModel             string   `json:"workModel" binding:"required"`
+	ContractType          string   `json:"contractType" binding:"required"`
+	Description           string   `json:"description" binding:"required"`
+	Responsibilities      string   `json:"responsibilities" binding:"required"`
+	Requirements          string   `json:"requirements" binding:"required"`
+	AccessibilityFeatures []string `json:"accessibilityFeatures"`
+}
+
 type JobPostResponse struct {
-	ID                    uint      `json:"ID"`
-	CreatedAt             time.Time `json:"created_at"`
-	UpdatedAt             time.Time `json:"updated_at"`
-	Title                 string    `json:"title"`
-	Location              string    `json:"location"`
-	WorkModel             string    `json:"work_model"`
-	ContractType          string    `json:"contract_type"`
-	Description           string    `json:"description"`
-	Responsibilities      string    `json:"responsibilities"`
-	Requirements          string    `json:"requirements"`
-	AccessibilityFeatures string    `json:"accessibility_features"`
-	Employer              EmployerResponse `json:"employer"`
+	ID                    uint                 `json:"id"`
+	CreatedAt             time.Time            `json:"created_at"`
+	UpdatedAt             time.Time            `json:"updated_at"`
+	Title                 string               `json:"title"`
+	Location              string               `json:"location"`
+	WorkModel             string               `json:"work_model"`
+	ContractType          string               `json:"contract_type"`
+	Description           string               `json:"description"`
+	Responsibilities      string               `json:"responsibilities"`
+	Requirements          string               `json:"requirements"`
+	AccessibilityFeatures string               `json:"accessibility_features"`
+	Employer              *EmployerResponseDTO `json:"employer"`
 }
 
 // ConvertJobPostToDTO converts a JobPost model to its DTO response.
@@ -36,12 +46,6 @@ func ConvertJobPostToDTO(jobPost models.JobPost) JobPostResponse {
 		Responsibilities:      jobPost.Responsibilities,
 		Requirements:          jobPost.Requirements,
 		AccessibilityFeatures: jobPost.AccessibilityFeatures,
-		Employer: EmployerResponse{
-			ID:          jobPost.Employer.ID,
-			CompanyName: jobPost.Employer.CompanyName,
-			LogoURL:     jobPost.Employer.LogoURL,
-			Industry:    jobPost.Employer.Industry,
-			Email:       jobPost.Employer.Email,
-		},
+		Employer:              ConvertEmployerToDTO(jobPost.Employer),
 	}
 }

@@ -25,6 +25,7 @@ type EmployerResponseDTO struct {
 	LogoURL     string `json:"logo_url"`
 	Industry    string `json:"industry"`
 	Email       string `json:"email"`
+	Address     string `json:"address"`
 }
 
 func ConvertEmployerToDTO(employer models.Employer) *EmployerResponseDTO {

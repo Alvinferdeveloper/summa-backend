@@ -149,6 +149,7 @@ func ConvertProfileToFullDTO(profile models.Profile) FullProfileResponseDTO {
 				ID:          exp.Employer.ID,
 				CompanyName: exp.Employer.CompanyName,
 				LogoURL:     exp.Employer.LogoURL,
+				Address:     exp.Employer.Address,
 			}
 		}
 		if exp.NewEmployer != nil {

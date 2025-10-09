@@ -126,6 +126,7 @@ type UniversitySummaryResponse struct {
 	ID      uint   `json:"id"`
 	Name    string `json:"name"`
 	Address string `json:"address"`
+	LogoURL string `json:"logo_url"`
 }
 type UniversitySuggestionSummaryResponse struct {
 	ID            uint   `json:"id"`
@@ -172,6 +173,7 @@ func ConvertProfileToFullDTO(profile models.Profile) FullProfileResponseDTO {
 				ID:      edu.University.ID,
 				Name:    edu.University.Name,
 				Address: edu.University.Address,
+				LogoURL: edu.University.LogoURL,
 			}
 		}
 		if edu.UniversitySuggestion != nil {

@@ -11,7 +11,8 @@ type Profile struct {
 	PhoneNumber         string `json:"phone_number" gorm:"column:phone_number"`
 	City                string `json:"city" gorm:"column:city"`
 	Country             string `json:"country" gorm:"column:country"`
-	ProfilePicture      string `json:"profile_picture" gorm:"column:profile_picture"`
+	ProfilePictureURL   string `json:"profile_picture_url" gorm:"column:profile_picture_url"`
+	BannerURL           string `json:"banner_url" gorm:"column:banner_url"`
 	Address             string `json:"address" gorm:"column:address"`
 	LinkedIn            string `json:"linked_in" gorm:"column:linked_in"`
 	ResumeURL           string `json:"resume_url" gorm:"column:resume_url"`

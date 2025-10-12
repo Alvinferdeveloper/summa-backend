@@ -12,9 +12,30 @@ import (
 )
 
 func RegisterEmployer(c *gin.Context) {
-	var req dto.EmployerRegisterRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	const MAX_UPLOAD_SIZE = 10 << 30 // 10 MB
+	if err := c.Request.ParseMultipartForm(MAX_UPLOAD_SIZE); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Error parsing form data or file exceeds 10MB limit."})
+		println(err.Error())
+		return
+	}
+
+	req := dto.EmployerRegisterRequest{
+		CompanyName:    c.Request.FormValue("company_name"),
+		Password:       c.Request.FormValue("password"),
+		Email:          c.Request.FormValue("email"),
+		PhoneNumber:    c.Request.FormValue("phone_number"),
+		Country:        c.Request.FormValue("country"),
+		FoundationDate: c.Request.FormValue("foundation_date"),
+		Industry:       c.Request.FormValue("industry"),
+		Size:           c.Request.FormValue("size"),
+		Description:    c.Request.FormValue("description"),
+		Dedication:     c.Request.FormValue("dedication"),
+		Address:        c.Request.FormValue("address"),
+		Website:        c.Request.FormValue("website"),
+	}
+
+	if req.CompanyName == "" || req.Email == "" || req.Password == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Los campos name, email y password son obligatorios"})
 		return
 	}
 
@@ -23,26 +44,41 @@ func RegisterEmployer(c *gin.Context) {
 		return
 	}
 
-	if _, err := services.FindEmployerByEmail(req.Email); err == nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "Email already registered"})
+	employerName, err := services.FindEmployerByName(req.CompanyName)
+	if employerName != nil {
+		c.JSON(http.StatusConflict, gin.H{"error": "El nombre de la empresa ya esta registrado"})
 		return
 	}
 
-	input := dto.EmployerRegisterRequest{
-		CompanyName:    req.CompanyName,
-		Email:          req.Email,
-		Password:       req.Password,
-		PhoneNumber:    req.PhoneNumber,
-		Country:        req.Country,
-		FoundationDate: req.FoundationDate,
-		Industry:       req.Industry,
-		Size:           req.Size,
-		Description:    req.Description,
-		Address:        req.Address,
-		Website:        req.Website,
+	if err != nil && err != gorm.ErrRecordNotFound {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "An unexpected error occurred"})
+		return
 	}
 
-	_, err := services.RegisterEmployer(&input)
+	employer, err := services.FindEmployerByEmail(req.Email)
+	if employer != nil {
+		c.JSON(http.StatusConflict, gin.H{"error": "El correo electronico ya esta registrado"})
+		return
+	}
+
+	if err != nil && err != gorm.ErrRecordNotFound {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "An unexpected error occurred"})
+		return
+	}
+
+	file, err := c.FormFile("logo")
+	var logoURL string
+	if err == nil {
+		logoURL, err = services.UploadFile(file, "logos")
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload logo"})
+			return
+		}
+	}
+
+	req.LogoURL = logoURL
+
+	_, err = services.RegisterEmployer(&req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to register employer"})
 		return

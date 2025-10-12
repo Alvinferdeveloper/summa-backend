@@ -14,13 +14,12 @@ type UpdatePersonalInfoRequest struct {
 }
 
 type UpdateContactInfoRequest struct {
-	PhoneNumber    string `json:"phone_number"`
-	City           string `json:"city"`
-	Country        string `json:"country"`
-	Address        string `json:"address"`
-	LinkedIn       string `json:"linked_in"`
-	ResumeURL      string `json:"resume_url"`
-	ProfilePicture string `json:"profile_picture"`
+	PhoneNumber string `json:"phone_number"`
+	City        string `json:"city"`
+	Country     string `json:"country"`
+	Address     string `json:"address"`
+	LinkedIn    string `json:"linked_in"`
+	ResumeURL   string `json:"resume_url"`
 }
 
 type UpdateDescriptionRequest struct {
@@ -71,7 +70,8 @@ type FullProfileResponseDTO struct {
 	PhoneNumber            string                      `json:"phone_number"`
 	City                   string                      `json:"city"`
 	Country                string                      `json:"country"`
-	ProfilePicture         string                      `json:"profile_picture"`
+	ProfilePictureURL      string                      `json:"profile_picture_url"`
+	BannerURL              string                      `json:"banner_url"`
 	Address                string                      `json:"address"`
 	LinkedIn               string                      `json:"linked_in"`
 	ResumeURL              string                      `json:"resume_url"`
@@ -206,7 +206,8 @@ func ConvertProfileToFullDTO(profile models.Profile) FullProfileResponseDTO {
 		PhoneNumber:            profile.PhoneNumber,
 		City:                   profile.City,
 		Country:                profile.Country,
-		ProfilePicture:         profile.ProfilePicture,
+		ProfilePictureURL:      profile.ProfilePictureURL,
+		BannerURL:              profile.BannerURL,
 		Address:                profile.Address,
 		LinkedIn:               profile.LinkedIn,
 		ResumeURL:              profile.ResumeURL,

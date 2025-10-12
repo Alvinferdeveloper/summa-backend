@@ -29,6 +29,7 @@ func RegisterEmployer(req *dto.EmployerRegisterRequest) (*models.Employer, error
 		Description: req.Description,
 		Address:     req.Address,
 		Website:     req.Website,
+		LogoURL:     req.LogoURL,
 	}
 
 	if req.FoundationDate != "" {
@@ -72,4 +73,12 @@ func SearchEmployers(query string) ([]models.Employer, error) {
 		return nil, err
 	}
 	return employers, nil
+}
+
+func FindEmployerByName(name string) (*models.Employer, error) {
+	var employer models.Employer
+	if err := config.DB.Where("company_name = ?", name).First(&employer).Error; err != nil {
+		return nil, err
+	}
+	return &employer, nil
 }

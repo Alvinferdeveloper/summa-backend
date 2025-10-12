@@ -17,6 +17,7 @@ type EmployerRegisterRequest struct {
 	Dedication     string `json:"dedication"`
 	Address        string `json:"address"`
 	Website        string `json:"website"`
+	LogoURL        string `json:"logo"`
 }
 
 type EmployerResponseDTO struct {

@@ -18,11 +18,11 @@ type JobApplicationResponse struct {
 }
 
 type ApplicantSummaryResponse struct {
-	ProfileID      uint   `json:"profile_id"`
-	FirstName      string `json:"first_name"`
-	LastName       string `json:"last_name"`
-	Email          string `json:"email"`
-	ProfilePicture string `json:"profile_picture"`
+	ProfileID         uint   `json:"profile_id"`
+	FirstName         string `json:"first_name"`
+	LastName          string `json:"last_name"`
+	Email             string `json:"email"`
+	ProfilePictureURL string `json:"profile_picture_url"`
 }
 
 type JobPostSummaryResponse struct {
@@ -34,10 +34,10 @@ type JobPostSummaryResponse struct {
 
 func ConvertJobApplicationToDTO(app models.JobApplication) JobApplicationResponse {
 	applicantSummary := ApplicantSummaryResponse{
-		ProfileID:      app.Profile.ID,
-		FirstName:      app.Profile.FirstName,
-		LastName:       app.Profile.LastName,
-		ProfilePicture: app.Profile.ProfilePicture,
+		ProfileID:         app.Profile.ID,
+		FirstName:         app.Profile.FirstName,
+		LastName:          app.Profile.LastName,
+		ProfilePictureURL: app.Profile.ProfilePictureURL,
 	}
 
 	jobPostSummary := JobPostSummaryResponse{

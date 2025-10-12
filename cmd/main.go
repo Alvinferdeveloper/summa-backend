@@ -8,6 +8,7 @@ import (
 
 	"github.com/Alvinferdeveloper/summa-backend/config"
 	"github.com/Alvinferdeveloper/summa-backend/routes"
+	"github.com/Alvinferdeveloper/summa-backend/services"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -22,6 +23,9 @@ func main() {
 
 	config.ConnectDB()
 	config.MigrateDatabase()
+	
+	// Inicializar el servicio de subida de archivos
+	services.InitS3Uploader()
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -50,6 +54,7 @@ func main() {
 		routes.SetupJobApplicationRoutes(v1)
 		routes.SetupUniversityRoutes(v1)
 		routes.SetupUniversitySuggestionRoutes(v1)
+		routes.SetupUploadRoutes(v1) // Añadir rutas de subida
 	}
 
 	r.GET("/ping", func(c *gin.Context) {

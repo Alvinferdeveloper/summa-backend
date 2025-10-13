@@ -23,8 +23,7 @@ func main() {
 
 	config.ConnectDB()
 	config.MigrateDatabase()
-	
-	// Inicializar el servicio de subida de archivos
+
 	services.InitS3Uploader()
 
 	port := os.Getenv("PORT")
@@ -54,7 +53,8 @@ func main() {
 		routes.SetupJobApplicationRoutes(v1)
 		routes.SetupUniversityRoutes(v1)
 		routes.SetupUniversitySuggestionRoutes(v1)
-		routes.SetupUploadRoutes(v1) // Añadir rutas de subida
+		routes.SetupUploadRoutes(v1)
+		routes.SetupCategoryRoutes(v1)
 	}
 
 	r.GET("/ping", func(c *gin.Context) {

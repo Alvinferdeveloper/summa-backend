@@ -58,6 +58,10 @@ func RunSeeder(db *gorm.DB) error {
 	if err != nil {
 		return fmt.Errorf("failed to seed accessibility needs: %w", err)
 	}
+	categories, err := seedCategories(db)
+	if err != nil {
+		return fmt.Errorf("failed to seed categories: %w", err)
+	}
 	universities, err := seedUniversities(db)
 	if err != nil {
 		return fmt.Errorf("failed to seed universities: %w", err)
@@ -82,7 +86,7 @@ func RunSeeder(db *gorm.DB) error {
 	if err != nil {
 		return fmt.Errorf("failed to seed profiles: %w", err)
 	}
-	err = seedJobPosts(db, employers, accessibilityNeeds)
+	err = seedJobPosts(db, employers, accessibilityNeeds, categories)
 	if err != nil {
 		return fmt.Errorf("failed to seed job posts: %w", err)
 	}
@@ -237,7 +241,7 @@ func seedProfiles(db *gorm.DB, users []models.User, dTypes []models.DisabilityTy
 	return nil
 }
 
-func seedJobPosts(db *gorm.DB, employers []models.Employer, aNeeds []models.AccessibilityNeed) error {
+func seedJobPosts(db *gorm.DB, employers []models.Employer, aNeeds []models.AccessibilityNeed, categories []models.Category) error {
 	fmt.Println("Seeding Job Posts...")
 	for i, employer := range employers {
 		features := []string{}
@@ -248,10 +252,15 @@ func seedJobPosts(db *gorm.DB, employers []models.Employer, aNeeds []models.Acce
 
 		jobPost := models.JobPost{
 			EmployerID:            employer.ID,
+			CategoryID:            categories[i%len(categories)].ID,
 			Title:                 fmt.Sprintf("Desarrollador Go Senior %d", i+1),
 			Location:              "Remoto",
+			IsUrgent:              i%2 == 0, // Alternar para ejemplo
 			WorkModel:             "Remoto",
-			ContractType:          "Tiempo Completo",
+			WorkSchedule:          "Tiempo completo",
+			ContractType:          "Indefinido",
+			ExperienceLevel:       "5-10 años",
+			Salary:                "$5000 - $7000 USD",
 			Description:           "Buscamos un desarrollador Go experimentado para unirse a nuestro equipo.",
 			Responsibilities:      "Diseñar, construir y mantener código Go eficiente, reutilizable y fiable.",
 			Requirements:          "Más de 5 años de experiencia en Go. Conocimiento de PostgreSQL.",
@@ -262,6 +271,26 @@ func seedJobPosts(db *gorm.DB, employers []models.Employer, aNeeds []models.Acce
 		}
 	}
 	return nil
+}
+
+// ... (resto de las funciones de seed) ...
+
+func seedCategories(db *gorm.DB) ([]models.Category, error) {
+	fmt.Println("Seeding Categories...")
+	categories := []models.Category{
+		{Name: "Tecnología y Desarrollo"},
+		{Name: "Ventas y Marketing"},
+		{Name: "Atención al Cliente"},
+		{Name: "Diseño y Creatividad"},
+		{Name: "Recursos Humanos"},
+		{Name: "Administración y Finanzas"},
+	}
+	for i := range categories {
+		if err := db.FirstOrCreate(&categories[i], models.Category{Name: categories[i].Name}).Error; err != nil {
+			return nil, err
+		}
+	}
+	return categories, nil
 }
 
 func seedExperiences(db *gorm.DB, users []models.User, employers []models.Employer) error {

@@ -30,7 +30,6 @@ func ConnectDB() {
 	fmt.Println("Database connection successfully opened.")
 }
 
-// MigrateDatabase runs the auto-migration for all models.
 func MigrateDatabase() {
 	fmt.Println("Running database migrations...")
 	err := DB.AutoMigrate(
@@ -48,6 +47,7 @@ func MigrateDatabase() {
 		&models.AccessibilityNeed{},
 		&models.JobPost{},
 		&models.JobApplication{},
+		&models.Category{},
 	)
 	if err != nil {
 		log.Fatal("Failed to migrate database:", err)

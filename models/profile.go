@@ -17,6 +17,7 @@ type Profile struct {
 	LinkedIn            string `json:"linked_in" gorm:"column:linked_in"`
 	ResumeURL           string `json:"resume_url" gorm:"column:resume_url"`
 	Description         string `json:"description" gorm:"column:description"`
+	Email               string `json:"email" gorm:"column:email"`
 
 	// Disability and Accessibility Fields
 	DisabilityInfoConsent  bool   `json:"disability_info_consent" gorm:"column:disability_info_consent;default:false"`

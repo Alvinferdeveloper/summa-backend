@@ -20,7 +20,7 @@ func FindOrCreateUser(provider, providerID, email string) (*models.User, *models
 			return nil, nil, err
 		}
 
-		profile := models.Profile{UserID: newUser.ID}
+		profile := models.Profile{UserID: newUser.ID, Email: email}
 		if err := config.DB.Create(&profile).Error; err != nil {
 			// Consider rolling back in future feature
 			return nil, nil, err

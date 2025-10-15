@@ -96,10 +96,5 @@ func GetEmployerJobPosts(c *gin.Context) {
 		return
 	}
 
-	var jobPostDTOs []dto.JobPostResponse
-	for _, jobPost := range jobPost {
-		jobPostDTOs = append(jobPostDTOs, dto.ConvertJobPostToDTO(jobPost))
-	}
-
-	c.JSON(http.StatusOK, jobPostDTOs)
+	c.JSON(http.StatusOK, jobPost)
 }

@@ -82,3 +82,37 @@ func FindEmployerByName(name string) (*models.Employer, error) {
 	}
 	return &employer, nil
 }
+
+func FindEmployerByID(id uint) (*models.Employer, error) {
+	var employer models.Employer
+	if err := config.DB.First(&employer, id).Error; err != nil {
+		return nil, err
+	}
+	return &employer, nil
+}
+
+func UpdateEmployerProfile(id uint, req *dto.UpdateEmployerProfileRequest) (*models.Employer, error) {
+	var employer models.Employer
+	if err := config.DB.First(&employer, id).Error; err != nil {
+		return nil, err
+	}
+
+	employer.CompanyName = req.CompanyName
+	employer.Email = req.Email
+	employer.Website = req.Website
+	employer.PhoneNumber = req.PhoneNumber
+	employer.FoundationDate = req.FoundationDate
+	employer.Dedication = req.Dedication
+	employer.Country = req.Country
+	employer.Industry = req.Industry
+	employer.Size = req.Size
+	employer.Description = req.Description
+	employer.Address = req.Address
+	employer.FoundationDate = req.FoundationDate
+
+	if err := config.DB.Save(&employer).Error; err != nil {
+		return nil, err
+	}
+
+	return &employer, nil
+}

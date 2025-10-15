@@ -6,10 +6,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// SetupEmployerRoutes registra las rutas relacionadas con los empleadores (búsqueda, etc.).
 func SetupEmployerRoutes(router *gin.RouterGroup) {
 	employer := router.Group("/employers")
 	{
 		employer.GET("/search", middlewares.AuthMiddleware("job_seeker", "employer"), controllers.SearchEmployers)
+	}
+
+	me := router.Group("/employer/me")
+	me.Use(middlewares.AuthMiddleware("employer"))
+	{
+		me.GET("", controllers.GetMyEmployerProfile)
+		me.PUT("", controllers.UpdateMyEmployerProfile)
 	}
 }

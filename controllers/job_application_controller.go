@@ -100,3 +100,31 @@ func GetJobApplicants(c *gin.Context) {
 
 	c.JSON(http.StatusOK, applicationDTOs)
 }
+
+func UpdateApplicationStatus(c *gin.Context) {
+	employerID, exists := c.Get("employer_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	applicationID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de postulación inválido"})
+		return
+	}
+
+	var req dto.UpdateApplicationStatusRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	application, err := services.UpdateApplicationStatus(uint(applicationID), employerID.(uint), req.Status)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Estado de la postulación actualizado", "application": application})
+}

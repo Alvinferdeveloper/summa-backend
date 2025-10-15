@@ -32,6 +32,10 @@ type JobPostSummaryResponse struct {
 	Employer    *EmployerResponseDTO `json:"employer"`
 }
 
+type UpdateApplicationStatusRequest struct {
+	Status string `json:"status" binding:"required"`
+}
+
 func ConvertJobApplicationToDTO(app models.JobApplication) JobApplicationResponse {
 	applicantSummary := ApplicantSummaryResponse{
 		ProfileID:         app.Profile.ID,

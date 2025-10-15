@@ -56,3 +56,20 @@ func GetJobApplicants(jobID uint, employerID uint) ([]models.JobApplication, err
 	}
 	return applications, nil
 }
+
+func UpdateApplicationStatus(applicationID uint, employerID uint, status string) (*models.JobApplication, error) {
+	var application models.JobApplication
+	if err := config.DB.Preload("JobPost").First(&application, applicationID).Error; err != nil {
+		return nil, fmt.Errorf("postulación no encontrada")
+	}
+	if application.JobPost.EmployerID != employerID {
+		return nil, fmt.Errorf("no autorizado para modificar esta postulación")
+	}
+
+	application.Status = status
+	if err := config.DB.Save(&application).Error; err != nil {
+		return nil, fmt.Errorf("no se pudo actualizar el estado: %w", err)
+	}
+
+	return &application, nil
+}

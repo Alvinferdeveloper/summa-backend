@@ -88,7 +88,7 @@ func UpdateContactInfo(userID uint, req *dto.UpdateContactInfoRequest) (*models.
 	profile.Country = req.Country
 	profile.Address = req.Address
 	profile.LinkedIn = req.LinkedIn
-	profile.ResumeURL = req.ResumeURL
+	profile.Email = req.Email
 	if err := config.DB.Save(&profile).Error; err != nil {
 		return nil, err
 	}

@@ -18,8 +18,8 @@ type UpdateContactInfoRequest struct {
 	City        string `json:"city"`
 	Country     string `json:"country"`
 	Address     string `json:"address"`
+	Email       string `json:"email"`
 	LinkedIn    string `json:"linked_in"`
-	ResumeURL   string `json:"resume_url"`
 }
 
 type UpdateDescriptionRequest struct {
@@ -80,6 +80,7 @@ type FullProfileResponseDTO struct {
 	DetailedAccommodations string                      `json:"detailed_accommodations"`
 	Experiences            []ExperienceResponse        `json:"experiences"`
 	Educations             []EducationResponse         `json:"educations"`
+	Email                  string                      `json:"email"`
 	Skills                 []SkillResponse             `json:"skills"`
 	DisabilityTypes        []DisabilityTypeResponse    `json:"disability_types"`
 	AccessibilityNeeds     []AccessibilityNeedResponse `json:"accessibility_needs"`
@@ -216,6 +217,7 @@ func ConvertProfileToFullDTO(profile models.Profile) FullProfileResponseDTO {
 		DetailedAccommodations: profile.DetailedAccommodations,
 		Experiences:            experiences,
 		Educations:             educations,
+		Email:                  profile.Email,
 		Skills:                 skills,
 		DisabilityTypes:        disabilityTypes,
 		AccessibilityNeeds:     accessibilityNeeds,

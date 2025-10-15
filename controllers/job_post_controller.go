@@ -38,22 +38,23 @@ func GetJobPosts(c *gin.Context) {
 	page, _ = strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ = strconv.Atoi(c.DefaultQuery("limit", "10"))
 
-	if page < 1 {
-		page = 1
-	}
-	if limit < 1 || limit > 100 {
-		limit = 10
+	var userID *uint
+	if id, exists := c.Get("user_id"); exists {
+		uid := id.(uint)
+		userID = &uid
 	}
 
-	jobPost, total, hasNextPage, err := services.GetJobPosts(page, limit)
+	filters := make(map[string]string)
+	filters["is_urgent"] = c.Query("is_urgent")
+	filters["date_posted"] = c.Query("date_posted")
+	filters["category_id"] = c.Query("category_id")
+	filters["work_schedule"] = c.Query("work_schedule")
+	filters["experience_level"] = c.Query("experience_level")
+
+	jobPostDTOs, total, hasNextPage, err := services.GetJobPosts(page, limit, userID, filters)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
-	}
-
-	var jobPostDTOs []dto.JobPostResponse
-	for _, jobPost := range jobPost {
-		jobPostDTOs = append(jobPostDTOs, dto.ConvertJobPostToDTO(jobPost))
 	}
 
 	c.JSON(http.StatusOK, gin.H{

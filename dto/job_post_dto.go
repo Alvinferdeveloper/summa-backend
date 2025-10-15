@@ -41,6 +41,7 @@ type JobPostResponse struct {
 	Employer              *EmployerResponseDTO `json:"employer"`
 	Category              *CategoryResponseDTO `json:"category"`
 	ApplicantCount        int64                `json:"applicant_count"`
+	HasApplied            bool                 `json:"has_applied"`
 }
 
 // ConvertJobPostToDTO converts a JobPost model to its DTO response.

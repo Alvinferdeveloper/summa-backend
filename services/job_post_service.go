@@ -40,21 +40,59 @@ func CreateJobPost(req *dto.CreateJobPostRequest, employerID uint) (*models.JobP
 	return &jobPost, nil
 }
 
-func GetJobPosts(page, limit int) ([]models.JobPost, int64, bool, error) {
+func GetJobPosts(page, limit int, userID *uint, filters map[string]string) ([]dto.JobPostResponse, int64, bool, error) {
 	offset := (page - 1) * limit
 
 	var jobPosts []models.JobPost
 	var total int64
 
-	config.DB.Model(&models.JobPost{}).Count(&total)
+	db := config.DB.Model(&models.JobPost{})
 
-	result := config.DB.Preload("Employer").Preload("Category").Limit(limit).Offset(offset).Order("created_at desc").Find(&jobPosts)
+	for key, value := range filters {
+		if value == "" {
+			continue
+		}
+		switch key {
+		case "is_urgent":
+			db = db.Where("is_urgent = ?", value == "true")
+		case "date_posted":
+			db = db.Where("created_at >= ?", value)
+		case "category_id":
+			db = db.Where("category_id = ?", value)
+		case "work_schedule":
+			db = db.Where("work_schedule = ?", value)
+		case "experience_level":
+			db = db.Where("experience_level = ?", value)
+		}
+	}
+
+	db.Count(&total)
+
+	result := db.Preload("Employer").Preload("Category").Limit(limit).Offset(offset).Order("created_at desc").Find(&jobPosts)
 
 	if result.Error != nil {
 		return nil, 0, false, fmt.Errorf("failed to fetch job posts: %w", result.Error)
 	}
 
-	return jobPosts, total, page*limit < int(total), nil
+	var profileID uint
+	if userID != nil {
+		var profile models.Profile
+		config.DB.Where("user_id = ?", *userID).First(&profile)
+		profileID = profile.ID
+	}
+
+	var jobPostDTOs []dto.JobPostResponse
+	for _, jobPost := range jobPosts {
+		dto := dto.ConvertJobPostToDTO(jobPost)
+		if profileID != 0 {
+			var count int64
+			config.DB.Model(&models.JobApplication{}).Where("profile_id = ? AND job_post_id = ?", profileID, jobPost.ID).Count(&count)
+			dto.HasApplied = count > 0
+		}
+		jobPostDTOs = append(jobPostDTOs, dto)
+	}
+
+	return jobPostDTOs, total, page*limit < int(total), nil
 }
 
 func GetJobPostById(id uint) (*models.JobPost, error) {

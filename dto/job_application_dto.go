@@ -37,6 +37,7 @@ func ConvertJobApplicationToDTO(app models.JobApplication) JobApplicationRespons
 		ProfileID:         app.Profile.ID,
 		FirstName:         app.Profile.FirstName,
 		LastName:          app.Profile.LastName,
+		Email:             app.Profile.Email,
 		ProfilePictureURL: app.Profile.ProfilePictureURL,
 	}
 

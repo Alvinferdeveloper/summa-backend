@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
 	"regexp"
 
@@ -83,6 +84,24 @@ func RegisterEmployer(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to register employer"})
 		return
 	}
+
+	// Publish welcome email task
+	go func() {
+		body, err := utils.ParseTemplate("employer_welcome.html", gin.H{"CompanyName": req.CompanyName})
+		if err != nil {
+			log.Printf("Failed to parse welcome email template for %s: %v", req.Email, err)
+			return
+		}
+
+		task := &services.EmailTask{
+			To:      req.Email,
+			Subject: "Bienvenido a Summa",
+			Body:    body,
+		}
+		if err := services.GlobalRabbitMQService.PublishEmailTask(task); err != nil {
+			log.Printf("Failed to publish welcome email task for %s: %v", req.Email, err)
+		}
+	}()
 
 	c.JSON(http.StatusCreated, gin.H{"message": "Employer registered successfully"})
 }

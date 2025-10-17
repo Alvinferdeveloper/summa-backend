@@ -26,6 +26,14 @@ func main() {
 
 	services.InitS3Uploader()
 
+	if err := services.InitEmailService(); err != nil {
+		log.Fatalf("Failed to initialize email service: %v", err)
+	}
+
+	if err := services.InitRabbitMQService(); err != nil {
+		log.Fatalf("Failed to initialize RabbitMQ service: %v", err)
+	}
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"

@@ -1,9 +1,10 @@
 package main
 
 import (
+	"log"
+
 	"encoding/json"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/Alvinferdeveloper/summa-backend/config"
@@ -12,6 +13,45 @@ import (
 	"github.com/joho/godotenv"
 	"gorm.io/gorm"
 )
+
+func Seed() {
+	seedAccessibleInfrastructures()
+	seedInclusivePrograms()
+}
+
+func seedAccessibleInfrastructures() {
+	infrastructures := []models.AccessibleInfrastructure{
+		{Name: "Rampas de acceso"},
+		{Name: "Ascensores accesibles"},
+		{Name: "Baños adaptados"},
+		{Name: "Puestos de trabajo ajustables"},
+		{Name: "Software de lectura de pantalla"},
+		{Name: "Señalización en Braille"},
+	}
+
+	for _, infra := range infrastructures {
+		config.DB.FirstOrCreate(&infra, models.AccessibleInfrastructure{Name: infra.Name})
+	}
+
+	log.Println("Accessible infrastructures seeded.")
+}
+
+func seedInclusivePrograms() {
+	programs := []models.InclusiveProgram{
+		{Name: "Capacitaciones en diversidad"},
+		{Name: "Programas de mentoría"},
+		{Name: "Acompañamiento continuo"},
+		{Name: "Adaptaciones tecnológicas"},
+		{Name: "Flexibilidad horaria"},
+		{Name: "Cultura de inclusión activa"},
+	}
+
+	for _, prog := range programs {
+		config.DB.FirstOrCreate(&prog, models.InclusiveProgram{Name: prog.Name})
+	}
+
+	log.Println("Inclusive programs seeded.")
+}
 
 func main() {
 	err := godotenv.Load() // Load .env file from current directory or parents
@@ -48,6 +88,8 @@ func RunSeeder(db *gorm.DB) error {
 	// db.Exec("DELETE FROM universities")
 	// db.Exec("DELETE FROM university_suggestions")
 	// db.Exec("DELETE FROM new_employers")
+	seedAccessibleInfrastructures()
+	seedInclusivePrograms()
 
 	// Seed basic types first
 	disabilityTypes, err := seedDisabilityTypes(db)

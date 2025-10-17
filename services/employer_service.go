@@ -27,6 +27,7 @@ func RegisterEmployer(req *dto.EmployerRegisterRequest) (*models.Employer, error
 		Industry:    req.Industry,
 		Size:        req.Size,
 		Description: req.Description,
+		Dedication:  req.Dedication,
 		Address:     req.Address,
 		Website:     req.Website,
 		LogoURL:     req.LogoURL,
@@ -39,7 +40,34 @@ func RegisterEmployer(req *dto.EmployerRegisterRequest) (*models.Employer, error
 		}
 	}
 
-	if err := config.DB.Create(employer).Error; err != nil {
+	err = config.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(employer).Error; err != nil {
+			return err
+		}
+		if len(req.AccessibleInfrastructureIDs) > 0 {
+			var infrastructures []models.AccessibleInfrastructure
+			if err := tx.Where("id IN ?", req.AccessibleInfrastructureIDs).Find(&infrastructures).Error; err != nil {
+				return err
+			}
+			if err := tx.Model(employer).Association("AccessibleInfrastructures").Append(&infrastructures); err != nil {
+				return err
+			}
+		}
+
+		if len(req.InclusiveProgramIDs) > 0 {
+			var programs []models.InclusiveProgram
+			if err := tx.Where("id IN ?", req.InclusiveProgramIDs).Find(&programs).Error; err != nil {
+				return err
+			}
+			if err := tx.Model(employer).Association("InclusivePrograms").Append(&programs); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
 		return nil, err
 	}
 

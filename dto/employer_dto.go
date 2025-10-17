@@ -7,19 +7,21 @@ import (
 )
 
 type EmployerRegisterRequest struct {
-	CompanyName    string `json:"company_name" binding:"required,min=3"`
-	Email          string `json:"email" binding:"required,email"`
-	Password       string `json:"password" binding:"required"`
-	PhoneNumber    string `json:"phone_number"`
-	Country        string `json:"country"`
-	FoundationDate string `json:"foundation_date"` // String to parse into time.Time
-	Industry       string `json:"industry"`
-	Size           string `json:"size"`
-	Description    string `json:"description"`
-	Dedication     string `json:"dedication"`
-	Address        string `json:"address"`
-	Website        string `json:"website"`
-	LogoURL        string `json:"logo"`
+	CompanyName               string   `json:"company_name"`
+	Email                     string   `json:"email"`
+	Password                  string   `json:"password"`
+	PhoneNumber               string   `json:"phone_number"`
+	Country                   string   `json:"country"`
+	FoundationDate            string   `json:"foundation_date"`
+	Industry                  string   `json:"industry"`
+	Size                      string   `json:"size"`
+	Description               string   `json:"description"`
+	Dedication                string   `json:"dedication"`
+	Address                   string   `json:"address"`
+	Website                   string   `json:"website"`
+	LogoURL                   string   `json:"logo"`
+	AccessibleInfrastructureIDs []string `json:"accessible_infrastructure_ids"`
+	InclusiveProgramIDs       []string `json:"inclusive_program_ids"`
 }
 
 type EmployerResponseDTO struct {

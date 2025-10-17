@@ -25,7 +25,11 @@ type Employer struct {
 	LogoURL                       string     `json:"logo_url" gorm:"column:logo_url"`
 	DiversityInclusionPolicyURL   string     `json:"diversity_inclusion_policy_url" gorm:"column:diversity_inclusion_policy_url"`
 	InclusionStatement            string     `json:"inclusion_statement" gorm:"type:text"`
-	AccessibilityCertificationURL string     `json:"accessibility_certification_url" gorm:"column:accessibility_certification_url"`
+	AccessibilityCertificationURL string                     `json:"accessibility_certification_url" gorm:"column:accessibility_certification_url"`
+
+	// Many-to-many relationships for inclusion options
+	AccessibleInfrastructures []AccessibleInfrastructure `json:"accessible_infrastructures,omitempty" gorm:"many2many:employer_accessible_infrastructures;"`
+	InclusivePrograms         []InclusiveProgram         `json:"inclusive_programs,omitempty" gorm:"many2many:employer_inclusive_programs;"`
 
 	// Relationships
 	JobPosts    []JobPost    `json:"job_posts,omitempty" gorm:"foreignKey:EmployerID"`

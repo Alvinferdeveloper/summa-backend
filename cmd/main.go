@@ -63,6 +63,8 @@ func main() {
 		routes.SetupUniversitySuggestionRoutes(v1)
 		routes.SetupUploadRoutes(v1)
 		routes.SetupCategoryRoutes(v1)
+		routes.SetupAccessibleInfrastructureRoutes(v1)
+		routes.SetupInclusiveProgramRoutes(v1)
 	}
 
 	r.GET("/ping", func(c *gin.Context) {

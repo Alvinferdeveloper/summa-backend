@@ -21,22 +21,24 @@ func RegisterEmployer(c *gin.Context) {
 	}
 
 	req := dto.EmployerRegisterRequest{
-		CompanyName:    c.Request.FormValue("company_name"),
-		Password:       c.Request.FormValue("password"),
-		Email:          c.Request.FormValue("email"),
-		PhoneNumber:    c.Request.FormValue("phone_number"),
-		Country:        c.Request.FormValue("country"),
-		FoundationDate: c.Request.FormValue("foundation_date"),
-		Industry:       c.Request.FormValue("industry"),
-		Size:           c.Request.FormValue("size"),
-		Description:    c.Request.FormValue("description"),
-		Dedication:     c.Request.FormValue("dedication"),
-		Address:        c.Request.FormValue("address"),
-		Website:        c.Request.FormValue("website"),
+		CompanyName:                 c.Request.FormValue("company_name"),
+		Password:                    c.Request.FormValue("password"),
+		Email:                       c.Request.FormValue("email"),
+		PhoneNumber:                 c.Request.FormValue("phone_number"),
+		Country:                     c.Request.FormValue("country"),
+		FoundationDate:              c.Request.FormValue("foundation_date"),
+		Industry:                    c.Request.FormValue("industry"),
+		Size:                        c.Request.FormValue("size"),
+		Description:                 c.Request.FormValue("description"),
+		Dedication:                  c.Request.FormValue("dedication"),
+		Address:                     c.Request.FormValue("address"),
+		Website:                     c.Request.FormValue("website"),
+		AccessibleInfrastructureIDs: c.Request.Form["accessible_infrastructure_ids"],
+		InclusiveProgramIDs:         c.Request.Form["inclusive_program_ids"],
 	}
 
-	if req.CompanyName == "" || req.Email == "" || req.Password == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Los campos name, email y password son obligatorios"})
+	if req.CompanyName == "" || req.Email == "" || req.Password == "" || req.PhoneNumber == "" || req.Country == "" || req.Industry == "" || req.Size == "" || req.Dedication == "" || req.Address == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Todos los campos obligatorios deben ser completados: CompanyName, Email, Password, PhoneNumber, Country, Industry, Size, Dedication, Address"})
 		return
 	}
 

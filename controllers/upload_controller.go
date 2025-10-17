@@ -77,3 +77,26 @@ func UploadProfileBanner(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Banner subido exitosamente", "banner_url": bannerURL})
 }
+
+func UploadCV(c *gin.Context) {
+	userID, _ := c.Get("user_id")
+
+	file, err := c.FormFile("cv")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No se ha subido ningún archivo"})
+		return
+	}
+
+	resumeURL, err := services.UploadFile(file, "resumes")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := config.DB.Model(&models.Profile{}).Where("user_id = ?", userID).Update("resume_url", resumeURL).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo actualizar el CV del perfil"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "CV subido exitosamente", "resume_url": resumeURL})
+}

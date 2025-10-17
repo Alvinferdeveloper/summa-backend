@@ -17,5 +17,6 @@ func SetupUploadRoutes(router *gin.RouterGroup) {
 	{
 		profile.POST("/picture", controllers.UploadProfilePicture)
 		profile.POST("/banner", controllers.UploadProfileBanner)
+		profile.POST("/cv", controllers.UploadCV)
 	}
 }

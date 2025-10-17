@@ -2,9 +2,12 @@ package services
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/Alvinferdeveloper/summa-backend/config"
 	"github.com/Alvinferdeveloper/summa-backend/models"
+	"github.com/Alvinferdeveloper/summa-backend/utils"
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
@@ -29,6 +32,42 @@ func CreateJobApplication(profile *models.Profile, jobID uint, coverLetter strin
 	if err := config.DB.Create(application).Error; err != nil {
 		return nil, fmt.Errorf("could not create application: %w", err)
 	}
+
+	// Fetch job post and employer details for email
+	var jobPost models.JobPost
+	if err := config.DB.Preload("Employer").First(&jobPost, jobID).Error; err != nil {
+		// Log error but don't block application creation
+		log.Printf("Failed to fetch job post for email confirmation: %v", err)
+	}
+
+	// Fetch user details for email
+	var user models.User
+	if err := config.DB.Preload("Profile").First(&user, profile.UserID).Error; err != nil {
+		log.Printf("Failed to fetch user for email confirmation: %v", err)
+	}
+
+	// Send email confirmation via RabbitMQ
+	go func() {
+		data := gin.H{
+			"ApplicantName": profile.FirstName,
+			"JobTitle":      jobPost.Title,
+			"CompanyName":   jobPost.Employer.CompanyName,
+		}
+		body, err := utils.ParseTemplate("job_application_confirmation.html", data)
+		if err != nil {
+			log.Printf("Failed to parse job application confirmation email template: %v", err)
+			return
+		}
+
+		task := &EmailTask{
+			To:      user.Email,
+			Subject: "Confirmación de Postulación a " + jobPost.Title,
+			Body:    body,
+		}
+		if err := GlobalRabbitMQService.PublishEmailTask(task); err != nil {
+			log.Printf("Failed to publish job application confirmation email task: %v", err)
+		}
+	}()
 
 	return application, nil
 }

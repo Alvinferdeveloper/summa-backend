@@ -63,6 +63,8 @@ func GetJobPosts(page, limit int, userID *uint, filters map[string]string) ([]dt
 			db = db.Where("work_schedule = ?", value)
 		case "experience_level":
 			db = db.Where("experience_level = ?", value)
+		case "contract_type":
+			db = db.Where("contract_type = ?", value)
 		}
 	}
 

@@ -22,6 +22,7 @@ type ApplicantSummaryResponse struct {
 	FirstName         string `json:"first_name"`
 	LastName          string `json:"last_name"`
 	Email             string `json:"email"`
+	ResumeURL         string `json:"resume_url"`
 	ProfilePictureURL string `json:"profile_picture_url"`
 }
 
@@ -42,6 +43,7 @@ func ConvertJobApplicationToDTO(app models.JobApplication) JobApplicationRespons
 		FirstName:         app.Profile.FirstName,
 		LastName:          app.Profile.LastName,
 		Email:             app.Profile.Email,
+		ResumeURL:         app.Profile.ResumeURL,
 		ProfilePictureURL: app.Profile.ProfilePictureURL,
 	}
 

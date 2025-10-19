@@ -34,6 +34,16 @@ func main() {
 		log.Fatalf("Failed to initialize RabbitMQ service: %v", err)
 	}
 
+	/*// Configure logging to a file for Promtail
+	logFilePath := "/var/log/summa-backend/app.log"
+	logFile, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatalf("Failed to open log file: %v", err)
+	}
+	defer logFile.Close()
+	log.SetOutput(logFile)
+	*/
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"

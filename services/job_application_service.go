@@ -80,20 +80,31 @@ func GetMyApplications(profileID uint) ([]models.JobApplication, error) {
 	return applications, nil
 }
 
-func GetJobApplicants(jobID uint, employerID uint) ([]models.JobApplication, error) {
+func GetJobApplicants(jobID uint, employerID uint, page int, limit int) ([]models.JobApplication, int64, error) {
 	var jobPost models.JobPost
 	if err := config.DB.Where("id = ? AND employer_id = ?", jobID, employerID).First(&jobPost).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, fmt.Errorf("job post not found or does not belong to employer")
+			return nil, 0, fmt.Errorf("job post not found or does not belong to employer")
 		}
-		return nil, fmt.Errorf("error verifying job post: %w", err)
+		return nil, 0, fmt.Errorf("error verifying job post: %w", err)
 	}
 
 	var applications []models.JobApplication
-	if err := config.DB.Preload("Profile").Where("job_post_id = ?", jobID).Order("created_at desc").Find(&applications).Error; err != nil {
-		return nil, fmt.Errorf("failed to fetch job applications: %w", err)
+	var total int64
+
+	offset := (page - 1) * limit
+
+	// First, get the total count without pagination
+	if err := config.DB.Model(&models.JobApplication{}).Where("job_post_id = ?", jobID).Count(&total).Error; err != nil {
+		return nil, 0, fmt.Errorf("failed to count job applications: %w", err)
 	}
-	return applications, nil
+
+	// Then, get the paginated results
+	if err := config.DB.Preload("Profile").Where("job_post_id = ?", jobID).Order("created_at desc").Limit(limit).Offset(offset).Find(&applications).Error; err != nil {
+		return nil, 0, fmt.Errorf("failed to fetch job applications: %w", err)
+	}
+
+	return applications, total, nil
 }
 
 func UpdateApplicationStatus(applicationID uint, employerID uint, status string) (*models.JobApplication, error) {

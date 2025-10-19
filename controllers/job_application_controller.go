@@ -87,7 +87,10 @@ func GetJobApplicants(c *gin.Context) {
 		return
 	}
 
-	applications, err := services.GetJobApplicants(uint(jobID), employerID.(uint))
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+
+	applications, total, err := services.GetJobApplicants(uint(jobID), employerID.(uint), page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -98,7 +101,12 @@ func GetJobApplicants(c *gin.Context) {
 		applicationDTOs = append(applicationDTOs, dto.ConvertJobApplicationToDTO(app))
 	}
 
-	c.JSON(http.StatusOK, applicationDTOs)
+	c.JSON(http.StatusOK, gin.H{
+		"data":  applicationDTOs,
+		"total": total,
+		"page":  page,
+		"limit": limit,
+	})
 }
 
 func UpdateApplicationStatus(c *gin.Context) {

@@ -75,6 +75,8 @@ func main() {
 		routes.SetupCategoryRoutes(v1)
 		routes.SetupAccessibleInfrastructureRoutes(v1)
 		routes.SetupInclusiveProgramRoutes(v1)
+		routes.SetupContractTypeRoutes(v1)
+		routes.SetupExperienceLevelRoutes(v1)
 	}
 
 	r.GET("/ping", func(c *gin.Context) {

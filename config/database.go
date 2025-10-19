@@ -50,6 +50,8 @@ func MigrateDatabase() {
 		&models.Category{},
 		&models.AccessibleInfrastructure{},
 		&models.InclusiveProgram{},
+		&models.ContractType{},
+		&models.ExperienceLevel{},
 	)
 	if err != nil {
 		log.Fatal("Failed to migrate database:", err)

@@ -14,10 +14,40 @@ import (
 	"gorm.io/gorm"
 )
 
-func Seed() {
-	seedAccessibleInfrastructures()
-	seedInclusivePrograms()
+func seedContractTypes() {
+	types := []models.ContractType{
+		{Name: "Indefinido"},
+		{Name: "Determinado"},
+		{Name: "Obra o labor"},
+		{Name: "Aprendizaje"},
+		{Name: "Otro"},
+	}
+
+	for _, t := range types {
+		config.DB.FirstOrCreate(&t, models.ContractType{Name: t.Name})
+	}
+
+	log.Println("Contract types seeded.")
 }
+
+func seedExperienceLevels() {
+	levels := []models.ExperienceLevel{
+		{Name: "Sin experiencia"},
+		{Name: "1 año"},
+		{Name: "2 años"},
+		{Name: "3-4 años"},
+		{Name: "5-10 años"},
+		{Name: "Más de 10 años"},
+	}
+
+	for _, l := range levels {
+		config.DB.FirstOrCreate(&l, models.ExperienceLevel{Name: l.Name})
+	}
+
+	log.Println("Experience levels seeded.")
+}
+
+// ... (rest of the file)
 
 func seedAccessibleInfrastructures() {
 	infrastructures := []models.AccessibleInfrastructure{
@@ -88,10 +118,12 @@ func RunSeeder(db *gorm.DB) error {
 	// db.Exec("DELETE FROM universities")
 	// db.Exec("DELETE FROM university_suggestions")
 	// db.Exec("DELETE FROM new_employers")
+	// Seed basic types first
+
 	seedAccessibleInfrastructures()
 	seedInclusivePrograms()
-
-	// Seed basic types first
+	seedContractTypes()
+	seedExperienceLevels()
 	disabilityTypes, err := seedDisabilityTypes(db)
 	if err != nil {
 		return fmt.Errorf("failed to seed disability types: %w", err)

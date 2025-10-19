@@ -19,6 +19,7 @@ type JobPost struct {
 	Responsibilities      string    `json:"responsibilities" gorm:"type:text;not null"`
 	Requirements          string    `json:"requirements" gorm:"type:text;not null"`
 	AccessibilityFeatures string    `json:"accessibility_features" gorm:"type:text"`
+	Status                string    `json:"status" gorm:"column:status;not null;default:'open'"` // e.g., open, closed
 
 	// Relationships
 	Employer Employer `json:"employer,omitempty"`

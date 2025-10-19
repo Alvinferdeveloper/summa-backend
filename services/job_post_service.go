@@ -46,7 +46,7 @@ func GetJobPosts(page, limit int, userID *uint, filters map[string]string) ([]dt
 	var jobPosts []models.JobPost
 	var total int64
 
-	db := config.DB.Model(&models.JobPost{})
+	db := config.DB.Model(&models.JobPost{}).Where("status = ?", "open")
 
 	for key, value := range filters {
 		if value == "" {
@@ -111,18 +111,33 @@ func GetJobPostById(id uint) (*models.JobPost, error) {
 
 func GetJobPostsByEmployerID(employerID uint) ([]dto.JobPostResponse, error) {
 	var jobPosts []models.JobPost
-	if err := config.DB.Preload("Employer").Preload("Category").Where("employer_id = ?", employerID).Order("created_at desc").Find(&jobPosts).Error; err != nil {
+	if err := config.DB.Where("employer_id = ?", employerID).Order("created_at desc").Find(&jobPosts).Error; err != nil {
 		return nil, fmt.Errorf("failed to fetch employer job posts: %w", err)
 	}
 
 	var jobPostDTOs []dto.JobPostResponse
 	for _, jobPost := range jobPosts {
-		var applicantCount int64
-		config.DB.Model(&models.JobApplication{}).Where("job_post_id = ?", jobPost.ID).Count(&applicantCount)
-		dto := dto.ConvertJobPostToDTO(jobPost)
-		dto.ApplicantCount = applicantCount
-		jobPostDTOs = append(jobPostDTOs, dto)
+		jobPostDTOs = append(jobPostDTOs, dto.ConvertJobPostToDTO(jobPost))
 	}
 
 	return jobPostDTOs, nil
+}
+
+func UpdateJobPostStatus(jobID uint, employerID uint, status string) (*models.JobPost, error) {
+	var jobPost models.JobPost
+	if err := config.DB.First(&jobPost, jobID).Error; err != nil {
+		return nil, fmt.Errorf("job post not found")
+	}
+
+	// Security check: ensure the employer owns the job post
+	if jobPost.EmployerID != employerID {
+		return nil, fmt.Errorf("unauthorized to modify this job post")
+	}
+
+	jobPost.Status = status
+	if err := config.DB.Save(&jobPost).Error; err != nil {
+		return nil, fmt.Errorf("could not update job post status: %w", err)
+	}
+
+	return &jobPost, nil
 }

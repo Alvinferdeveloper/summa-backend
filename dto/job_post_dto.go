@@ -35,6 +35,7 @@ type JobPostResponse struct {
 	ExperienceLevel       string               `json:"experience_level"`
 	Salary                string               `json:"salary"`
 	Description           string               `json:"description"`
+	Status                string               `json:"status"`
 	Responsibilities      string               `json:"responsibilities"`
 	Requirements          string               `json:"requirements"`
 	AccessibilityFeatures string               `json:"accessibility_features"`
@@ -42,6 +43,10 @@ type JobPostResponse struct {
 	Category              *CategoryResponseDTO `json:"category"`
 	ApplicantCount        int64                `json:"applicant_count"`
 	HasApplied            bool                 `json:"has_applied"`
+}
+
+type UpdateJobPostStatusRequest struct {
+	Status string `json:"status" binding:"required,oneof=open closed"`
 }
 
 // ConvertJobPostToDTO converts a JobPost model to its DTO response.
@@ -58,6 +63,7 @@ func ConvertJobPostToDTO(jobPost models.JobPost) JobPostResponse {
 		ContractType:          jobPost.ContractType,
 		ExperienceLevel:       jobPost.ExperienceLevel,
 		Salary:                jobPost.Salary,
+		Status:                jobPost.Status,
 		Description:           jobPost.Description,
 		Responsibilities:      jobPost.Responsibilities,
 		Requirements:          jobPost.Requirements,

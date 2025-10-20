@@ -161,7 +161,7 @@ func RunSeeder(db *gorm.DB) error {
 	if err != nil {
 		return fmt.Errorf("failed to seed profiles: %w", err)
 	}
-	err = seedJobPosts(db, employers, accessibilityNeeds, categories)
+	err = seedJobPosts(db, employers, categories)
 	if err != nil {
 		return fmt.Errorf("failed to seed job posts: %w", err)
 	}
@@ -325,7 +325,7 @@ func Seed() {
 	seedWorkModels()
 }
 
-func seedJobPosts(db *gorm.DB, employers []models.Employer, aNeeds []models.AccessibilityNeed, categories []models.Category) error {
+func seedJobPosts(db *gorm.DB, employers []models.Employer, categories []models.Category) error {
 	// Ensure required foreign keys exist
 	var workModel models.WorkModel
 	if err := db.First(&workModel).Error; err != nil {
@@ -353,6 +353,10 @@ func seedJobPosts(db *gorm.DB, employers []models.Employer, aNeeds []models.Acce
 	if config.DB.First(&accessibilityNeed).Error != nil {
 		log.Println("Could not find an accessibility need to seed job posts with. Skipping.")
 	}
+	var disabilityType models.DisabilityType
+	if config.DB.First(&disabilityType).Error != nil {
+		log.Println("Could not find a disability type to seed job posts with. Skipping.")
+	}
 
 	jobPosts := []models.JobPost{
 		{
@@ -370,6 +374,7 @@ func seedJobPosts(db *gorm.DB, employers []models.Employer, aNeeds []models.Acce
 			Responsibilities:   "Diseñar y desarrollar APIs RESTful. Escribir código limpio, mantenible y probado. Colaborar con equipos de frontend y producto.",
 			Requirements:       "+5 años de experiencia con Go. Experiencia con Docker, Kubernetes y PostgreSQL. Sólidos conocimientos de estructuras de datos y algoritmos.",
 			AccessibilityNeeds: []models.AccessibilityNeed{accessibilityNeed},
+			DisabilityTypes:    []models.DisabilityType{disabilityType},
 		},
 		{
 			EmployerID:         employers[0].ID,

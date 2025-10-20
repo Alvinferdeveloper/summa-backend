@@ -39,6 +39,17 @@ func CreateJobPost(req *dto.CreateJobPostRequest, employerID uint) (*models.JobP
 				return fmt.Errorf("failed to associate accessibility needs: %w", err)
 			}
 		}
+
+		if len(req.DisabilityTypeIDs) > 0 {
+			var disabilityTypes []models.DisabilityType
+			if err := tx.Where("id IN ?", req.DisabilityTypeIDs).Find(&disabilityTypes).Error; err != nil {
+				return fmt.Errorf("failed to find disability types: %w", err)
+			}
+			if err := tx.Model(&jobPost).Association("DisabilityTypes").Append(&disabilityTypes); err != nil {
+				return fmt.Errorf("failed to associate disability types: %w", err)
+			}
+		}
+
 		return nil
 	})
 
@@ -95,7 +106,7 @@ func GetJobPosts(page, limit int, userID *uint, filters map[string]string) ([]dt
 	}
 
 	// Perform the find query with pagination and preloads
-	result := baseQuery.Preload("Employer").Preload("Category").Preload("ContractType").Preload("ExperienceLevel").Preload("WorkSchedule").Preload("WorkModel").Preload("AccessibilityNeeds").Limit(limit).Offset(offset).Order("job_posts.created_at desc").Find(&jobPosts)
+	result := baseQuery.Preload("Employer").Preload("Category").Preload("ContractType").Preload("ExperienceLevel").Preload("WorkSchedule").Preload("WorkModel").Preload("AccessibilityNeeds").Preload("DisabilityTypes").Limit(limit).Offset(offset).Order("job_posts.created_at desc").Find(&jobPosts)
 
 	if result.Error != nil {
 		return nil, 0, false, fmt.Errorf("failed to fetch job posts: %w", result.Error)
@@ -124,7 +135,7 @@ func GetJobPosts(page, limit int, userID *uint, filters map[string]string) ([]dt
 
 func GetJobPostById(id uint) (*models.JobPost, error) {
 	var jobPost models.JobPost
-	if err := config.DB.Preload("Employer").Preload("Category").Preload("ContractType").Preload("ExperienceLevel").Preload("WorkSchedule").Preload("WorkModel").Preload("AccessibilityNeeds").First(&jobPost, id).Error; err != nil {
+	if err := config.DB.Preload("Employer").Preload("Category").Preload("ContractType").Preload("ExperienceLevel").Preload("WorkSchedule").Preload("WorkModel").Preload("AccessibilityNeeds").Preload("DisabilityTypes").First(&jobPost, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf("job post not found")
 		}

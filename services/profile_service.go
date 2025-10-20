@@ -32,14 +32,6 @@ func CompleteOnboarding(req *dto.OnboardingRequest, userID uint) (*models.Profil
 	return &profile, nil
 }
 
-func GetDisabilityTypes() ([]models.DisabilityType, error) {
-	var disabilityTypes []models.DisabilityType
-	if err := config.DB.Find(&disabilityTypes).Error; err != nil {
-		return nil, err
-	}
-	return disabilityTypes, nil
-}
-
 func GetFullProfile(userID uint) (*models.Profile, error) {
 	var profile models.Profile
 	if err := config.DB.Where("user_id = ?", userID).

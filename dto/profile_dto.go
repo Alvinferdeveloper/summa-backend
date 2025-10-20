@@ -109,11 +109,6 @@ type SkillResponse struct {
 	ID   uint   `json:"id"`
 	Name string `json:"name"`
 }
-type DisabilityTypeResponse struct {
-	ID          uint   `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-}
 
 type NewEmployerSummaryResponse struct {
 	ID          uint   `json:"id"`

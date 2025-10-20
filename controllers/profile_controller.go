@@ -32,24 +32,6 @@ func CompleteOnboarding(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Profile updated successfully"})
 }
 
-func GetDisabilityTypes(c *gin.Context) {
-	disabilityTypes, err := services.GetDisabilityTypes()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch disability types"})
-		return
-	}
-
-	var disabilityTypesDTO []dto.DisabilityTypeResponse
-	for _, disabilityType := range disabilityTypes {
-		disabilityTypesDTO = append(disabilityTypesDTO, dto.DisabilityTypeResponse{
-			ID:          disabilityType.ID,
-			Name:        disabilityType.Name,
-			Description: disabilityType.Description,
-		})
-	}
-	c.JSON(http.StatusOK, disabilityTypesDTO)
-}
-
 func GetMyProfile(c *gin.Context) {
 	userID, exists := c.Get("user_id")
 	if !exists {

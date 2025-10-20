@@ -20,6 +20,7 @@ type CreateJobPostRequest struct {
 	Responsibilities     string `json:"responsibilities" binding:"required"`
 	Requirements         string `json:"requirements" binding:"required"`
 	AccessibilityNeedIDs []uint `json:"accessibilityNeedIds"`
+	DisabilityTypeIDs    []uint `json:"disabilityTypeIds"`
 }
 
 type JobPostResponse struct {
@@ -39,6 +40,7 @@ type JobPostResponse struct {
 	Responsibilities   string                      `json:"responsibilities"`
 	Requirements       string                      `json:"requirements"`
 	AccessibilityNeeds []AccessibilityNeedResponse `json:"accessibility_needs,omitempty"`
+	DisabilityTypes    []DisabilityTypeResponse    `json:"disability_types,omitempty"`
 	Employer           *EmployerResponseDTO        `json:"employer"`
 	Category           *CategoryResponseDTO        `json:"category"`
 	ApplicantCount     int64                       `json:"applicant_count"`
@@ -63,11 +65,18 @@ func ConvertJobPostToDTO(jobPost models.JobPost) JobPostResponse {
 		ContractType:    jobPost.ContractType.Name,
 		ExperienceLevel: jobPost.ExperienceLevel.Name,
 		AccessibilityNeeds: func() []AccessibilityNeedResponse {
-			var accessibilityNeeds []AccessibilityNeedResponse
-			for _, accessibilityNeed := range jobPost.AccessibilityNeeds {
-				accessibilityNeeds = append(accessibilityNeeds, ConvertAccessibilityNeedToDTO(accessibilityNeed))
+			var dtos []AccessibilityNeedResponse
+			for _, an := range jobPost.AccessibilityNeeds {
+				dtos = append(dtos, ConvertAccessibilityNeedToDTO(an))
 			}
-			return accessibilityNeeds
+			return dtos
+		}(),
+		DisabilityTypes: func() []DisabilityTypeResponse {
+			var dtos []DisabilityTypeResponse
+			for _, dt := range jobPost.DisabilityTypes {
+				dtos = append(dtos, ConvertDisabilityTypeToDTO(dt))
+			}
+			return dtos
 		}(),
 		Salary:           jobPost.Salary,
 		Status:           jobPost.Status,

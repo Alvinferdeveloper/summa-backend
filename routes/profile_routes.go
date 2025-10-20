@@ -7,7 +7,6 @@ import (
 )
 
 func SetupProfileRoutes(router *gin.RouterGroup) {
-	router.GET("/disability-types", controllers.GetDisabilityTypes)
 	router.GET("/accessibility-needs", controllers.GetAccessibilityNeeds)
 
 	profile := router.Group("/profile")

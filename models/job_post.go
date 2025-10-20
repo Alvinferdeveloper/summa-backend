@@ -28,4 +28,5 @@ type JobPost struct {
 	WorkSchedule       WorkSchedule        `json:"work_schedule,omitempty"`
 	WorkModel          WorkModel           `json:"work_model,omitempty"`
 	AccessibilityNeeds []AccessibilityNeed `json:"accessibility_needs,omitempty" gorm:"many2many:job_post_accessibility_needs;"`
+	DisabilityTypes    []DisabilityType    `json:"disability_types,omitempty" gorm:"many2many:job_post_disability_types;"`
 }

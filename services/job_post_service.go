@@ -22,10 +22,10 @@ func CreateJobPost(req *dto.CreateJobPostRequest, employerID uint) (*models.JobP
 		Title:                 req.Title,
 		Location:              req.Location,
 		IsUrgent:              req.IsUrgent,
-		WorkModel:             req.WorkModel,
-		WorkSchedule:          req.WorkSchedule,
-		ContractType:          req.ContractType,
-		ExperienceLevel:       req.ExperienceLevel,
+		WorkModelID:           req.WorkModelID,
+		WorkScheduleID:        req.WorkScheduleID,
+		ContractTypeID:        req.ContractTypeID,
+		ExperienceLevelID:     req.ExperienceLevelID,
 		Salary:                req.Salary,
 		Description:           req.Description,
 		Responsibilities:      req.Responsibilities,
@@ -46,31 +46,45 @@ func GetJobPosts(page, limit int, userID *uint, filters map[string]string) ([]dt
 	var jobPosts []models.JobPost
 	var total int64
 
-	db := config.DB.Model(&models.JobPost{}).Where("status = ?", "open")
+	// Base query with all joins and initial status filter
+	baseQuery := config.DB.Model(&models.JobPost{}).
+		Joins("JOIN employers ON employers.id = job_posts.employer_id").
+		Joins("JOIN categories ON categories.id = job_posts.category_id").
+		Joins("JOIN contract_types ON contract_types.id = job_posts.contract_type_id").
+		Joins("JOIN experience_levels ON experience_levels.id = job_posts.experience_level_id").
+		Joins("JOIN work_schedules ON work_schedules.id = job_posts.work_schedule_id").
+		Joins("JOIN work_models ON work_models.id = job_posts.work_model_id").
+		Where("job_posts.status = ?", "open")
 
+	// Apply dynamic filters
 	for key, value := range filters {
 		if value == "" {
 			continue
 		}
 		switch key {
 		case "is_urgent":
-			db = db.Where("is_urgent = ?", value == "true")
+			baseQuery = baseQuery.Where("job_posts.is_urgent = ?", value == "true")
 		case "date_posted":
-			db = db.Where("created_at >= ?", value)
+			baseQuery = baseQuery.Where("job_posts.created_at >= ?", value)
 		case "category_id":
-			db = db.Where("category_id = ?", value)
+			baseQuery = baseQuery.Where("categories.id = ?", value)
 		case "work_schedule":
-			db = db.Where("work_schedule = ?", value)
+			baseQuery = baseQuery.Where("work_schedules.name = ?", value)
 		case "experience_level":
-			db = db.Where("experience_level = ?", value)
+			baseQuery = baseQuery.Where("experience_levels.name = ?", value)
 		case "contract_type":
-			db = db.Where("contract_type = ?", value)
+			baseQuery = baseQuery.Where("contract_types.name = ?", value)
+		case "work_model":
+			baseQuery = baseQuery.Where("work_models.name = ?", value)
 		}
 	}
 
-	db.Count(&total)
+	if err := baseQuery.Count(&total).Error; err != nil {
+		return nil, 0, false, fmt.Errorf("failed to count job posts: %w", err)
+	}
 
-	result := db.Preload("Employer").Preload("Category").Limit(limit).Offset(offset).Order("created_at desc").Find(&jobPosts)
+	// Perform the find query with pagination and preloads
+	result := baseQuery.Preload("Employer").Preload("Category").Preload("ContractType").Preload("ExperienceLevel").Preload("WorkSchedule").Preload("WorkModel").Limit(limit).Offset(offset).Order("job_posts.created_at desc").Find(&jobPosts)
 
 	if result.Error != nil {
 		return nil, 0, false, fmt.Errorf("failed to fetch job posts: %w", result.Error)
@@ -99,7 +113,7 @@ func GetJobPosts(page, limit int, userID *uint, filters map[string]string) ([]dt
 
 func GetJobPostById(id uint) (*models.JobPost, error) {
 	var jobPost models.JobPost
-	if err := config.DB.Preload("Employer").Preload("Category").First(&jobPost, id).Error; err != nil {
+	if err := config.DB.Preload("Employer").Preload("Category").Preload("ContractType").Preload("ExperienceLevel").Preload("WorkSchedule").Preload("WorkModel").First(&jobPost, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf("job post not found")
 		}

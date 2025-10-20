@@ -10,10 +10,10 @@ type CreateJobPostRequest struct {
 	Title                 string   `json:"title" binding:"required"`
 	Location              string   `json:"location" binding:"required"`
 	IsUrgent              bool     `json:"is_urgent"`
-	WorkModel             string   `json:"workModel" binding:"required"`
-	WorkSchedule          string   `json:"workSchedule" binding:"required"`
-	ContractType          string   `json:"contractType" binding:"required"`
-	ExperienceLevel       string   `json:"experienceLevel" binding:"required"`
+	WorkModelID           uint     `json:"workModelId" binding:"required"`
+	WorkScheduleID        uint     `json:"workScheduleId" binding:"required"`
+	ContractTypeID        uint     `json:"contractTypeId" binding:"required"`
+	ExperienceLevelID     uint     `json:"experienceLevelId" binding:"required"`
 	Salary                string   `json:"salary"`
 	CategoryID            uint     `json:"category_id" binding:"required"`
 	Description           string   `json:"description" binding:"required"`
@@ -58,10 +58,10 @@ func ConvertJobPostToDTO(jobPost models.JobPost) JobPostResponse {
 		Title:                 jobPost.Title,
 		Location:              jobPost.Location,
 		IsUrgent:              jobPost.IsUrgent,
-		WorkModel:             jobPost.WorkModel,
-		WorkSchedule:          jobPost.WorkSchedule,
-		ContractType:          jobPost.ContractType,
-		ExperienceLevel:       jobPost.ExperienceLevel,
+		WorkModel:             jobPost.WorkModel.Name,
+		WorkSchedule:          jobPost.WorkSchedule.Name,
+		ContractType:          jobPost.ContractType.Name,
+		ExperienceLevel:       jobPost.ExperienceLevel.Name,
 		Salary:                jobPost.Salary,
 		Status:                jobPost.Status,
 		Description:           jobPost.Description,

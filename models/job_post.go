@@ -10,10 +10,10 @@ type JobPost struct {
 	Title                 string    `json:"title" gorm:"column:title;not null"`
 	Location              string    `json:"location" gorm:"column:location;not null"`
 	IsUrgent              bool      `json:"is_urgent" gorm:"column:is_urgent;default:false"`
-	WorkModel             string    `json:"work_model" gorm:"column:work_model;not null"`
-	WorkSchedule          string    `json:"work_schedule" gorm:"column:work_schedule;not null"` // Ej: Tiempo completo, Medio Tiempo
-	ContractType          string    `json:"contract_type" gorm:"column:contract_type;not null"` // Ej: Indefinido, Determinado
-	ExperienceLevel       string    `json:"experience_level" gorm:"column:experience_level;not null"` // Ej: Sin experiencia, 1 año
+	WorkModelID           uint      `json:"work_model_id" gorm:"column:work_model_id;not null"`
+	WorkScheduleID        uint      `json:"work_schedule_id" gorm:"column:work_schedule_id;not null"`
+	ContractTypeID        uint      `json:"contract_type_id" gorm:"column:contract_type_id;not null"`
+	ExperienceLevelID     uint      `json:"experience_level_id" gorm:"column:experience_level_id;not null"`
 	Salary                string    `json:"salary" gorm:"column:salary"` // Ej: $1000 - $1500, A convenir
 	Description           string    `json:"description" gorm:"type:text;not null"`
 	Responsibilities      string    `json:"responsibilities" gorm:"type:text;not null"`
@@ -22,6 +22,10 @@ type JobPost struct {
 	Status                string    `json:"status" gorm:"column:status;not null;default:'open'"` // e.g., open, closed
 
 	// Relationships
-	Employer Employer `json:"employer,omitempty"`
-	Category Category `json:"category,omitempty"`
+	Employer        Employer        `json:"employer,omitempty"`
+	Category        Category        `json:"category,omitempty"`
+	ContractType    ContractType    `json:"contract_type,omitempty"`
+	ExperienceLevel ExperienceLevel `json:"experience_level,omitempty"`
+	WorkSchedule    WorkSchedule    `json:"work_schedule,omitempty"`
+	WorkModel       WorkModel       `json:"work_model,omitempty"`
 }

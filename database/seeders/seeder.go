@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -124,6 +123,8 @@ func RunSeeder(db *gorm.DB) error {
 	seedInclusivePrograms()
 	seedContractTypes()
 	seedExperienceLevels()
+	seedWorkSchedules()
+	seedWorkModels()
 	disabilityTypes, err := seedDisabilityTypes(db)
 	if err != nil {
 		return fmt.Errorf("failed to seed disability types: %w", err)
@@ -315,39 +316,108 @@ func seedProfiles(db *gorm.DB, users []models.User, dTypes []models.DisabilityTy
 	return nil
 }
 
-func seedJobPosts(db *gorm.DB, employers []models.Employer, aNeeds []models.AccessibilityNeed, categories []models.Category) error {
-	fmt.Println("Seeding Job Posts...")
-	for i, employer := range employers {
-		features := []string{}
-		if len(aNeeds) > 0 {
-			features = append(features, aNeeds[i%len(aNeeds)].Name)
-		}
-		featuresJSON, _ := json.Marshal(features)
+func Seed() {
+	seedAccessibleInfrastructures()
+	seedInclusivePrograms()
+	seedContractTypes()
+	seedExperienceLevels()
+	seedWorkSchedules()
+	seedWorkModels()
+}
 
-		jobPost := models.JobPost{
-			EmployerID:            employer.ID,
-			CategoryID:            categories[i%len(categories)].ID,
-			Title:                 fmt.Sprintf("Desarrollador Go Senior %d", i+1),
-			Location:              "Remoto",
-			IsUrgent:              i%2 == 0, // Alternar para ejemplo
-			WorkModel:             "Remoto",
-			WorkSchedule:          "Tiempo completo",
-			ContractType:          "Indefinido",
-			ExperienceLevel:       "5-10 años",
-			Salary:                "$5000 - $7000 USD",
-			Description:           "Buscamos un desarrollador Go experimentado para unirse a nuestro equipo.",
-			Responsibilities:      "Diseñar, construir y mantener código Go eficiente, reutilizable y fiable.",
-			Requirements:          "Más de 5 años de experiencia en Go. Conocimiento de PostgreSQL.",
-			AccessibilityFeatures: string(featuresJSON),
-		}
-		if err := db.FirstOrCreate(&jobPost, models.JobPost{EmployerID: employer.ID, Title: jobPost.Title}).Error; err != nil {
-			return err
+func seedJobPosts(db *gorm.DB, employers []models.Employer, aNeeds []models.AccessibilityNeed, categories []models.Category) error {
+	// Ensure required foreign keys exist
+	var workModel models.WorkModel
+	if err := db.First(&workModel).Error; err != nil {
+		return err
+	}
+	var workSchedule models.WorkSchedule
+	if err := db.First(&workSchedule).Error; err != nil {
+		return err
+	}
+	var contractType models.ContractType
+	if err := db.First(&contractType).Error; err != nil {
+		return err
+	}
+	var expLevel models.ExperienceLevel
+	if err := db.First(&expLevel).Error; err != nil {
+		return err
+	}
+
+	if len(employers) == 0 || len(categories) == 0 {
+		log.Println("Missing employers or categories to seed job posts. Skipping.")
+		return nil
+	}
+
+	features := ""
+	if len(aNeeds) > 0 {
+		features = aNeeds[0].Name
+	}
+
+	jobPosts := []models.JobPost{
+		{
+			EmployerID:            employers[0].ID,
+			CategoryID:            categories[0].ID,
+			Title:                 "Diseñador/a de Producto",
+			Location:              "Madrid, España",
+			IsUrgent:              false,
+			WorkModelID:           workModel.ID,
+			WorkScheduleID:        workSchedule.ID,
+			ContractTypeID:        contractType.ID,
+			ExperienceLevelID:     expLevel.ID,
+			Salary:                "€45,000 - €55,000 anuales",
+			Description:           "Buscamos un diseñador de producto apasionado por crear experiencias de usuario intuitivas y hermosas. Serás responsable de todo el ciclo de vida del diseño.",
+			Responsibilities:      "Investigación de usuarios, creación de wireframes y prototipos, diseño de interfaces de alta fidelidad, colaboración con desarrolladores.",
+			Requirements:          "Portfolio sólido que demuestre experiencia en diseño de UI/UX. Dominio de Figma, Sketch o Adobe XD. Comprensión de los principios de diseño centrado en el usuario.",
+			AccessibilityFeatures: features,
+		},
+	}
+
+	for _, job := range jobPosts {
+		var existingJob models.JobPost
+		if db.Where("title = ?", job.Title).First(&existingJob).Error == gorm.ErrRecordNotFound {
+			if err := db.Create(&job).Error; err != nil {
+				log.Printf("Failed to seed job post: %v", err)
+			}
 		}
 	}
+
+	log.Println("Job posts seeded.")
 	return nil
 }
 
-// ... (resto de las funciones de seed) ...
+// ... (rest of the file)
+
+func seedWorkSchedules() {
+	schedules := []models.WorkSchedule{
+		{Name: "Tiempo completo"},
+		{Name: "Medio Tiempo"},
+		{Name: "Beca/Practicas"},
+		{Name: "Por horas"},
+	}
+
+	for _, s := range schedules {
+		config.DB.FirstOrCreate(&s, models.WorkSchedule{Name: s.Name})
+	}
+
+	log.Println("Work schedules seeded.")
+}
+
+func seedWorkModels() {
+	modelsData := []models.WorkModel{
+		{Name: "Presencial"},
+		{Name: "Híbrido"},
+		{Name: "Remoto"},
+	}
+
+	for _, m := range modelsData {
+		config.DB.FirstOrCreate(&m, models.WorkModel{Name: m.Name})
+	}
+
+	log.Println("Work models seeded.")
+}
+
+// ... (rest of the file)
 
 func seedCategories(db *gorm.DB) ([]models.Category, error) {
 	fmt.Println("Seeding Categories...")

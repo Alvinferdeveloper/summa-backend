@@ -63,19 +63,19 @@ func GetJobPosts(page, limit int, userID *uint, filters map[string]string) ([]dt
 		}
 		switch key {
 		case "is_urgent":
-			baseQuery = baseQuery.Where("job_posts.is_urgent = ?", value == "true")
+			baseQuery = baseQuery.Where("is_urgent = ?", value == "true")
 		case "date_posted":
-			baseQuery = baseQuery.Where("job_posts.created_at >= ?", value)
+			baseQuery = baseQuery.Where("created_at >= ?", value)
 		case "category_id":
-			baseQuery = baseQuery.Where("categories.id = ?", value)
-		case "work_schedule":
-			baseQuery = baseQuery.Where("work_schedules.name = ?", value)
-		case "experience_level":
-			baseQuery = baseQuery.Where("experience_levels.name = ?", value)
-		case "contract_type":
-			baseQuery = baseQuery.Where("contract_types.name = ?", value)
-		case "work_model":
-			baseQuery = baseQuery.Where("work_models.name = ?", value)
+			baseQuery = baseQuery.Where("category_id = ?", value)
+		case "work_schedule_id":
+			baseQuery = baseQuery.Where("work_schedule_id = ?", value)
+		case "experience_level_id":
+			baseQuery = baseQuery.Where("experience_level_id = ?", value)
+		case "contract_type_id":
+			baseQuery = baseQuery.Where("contract_type_id = ?", value)
+		case "work_model_id":
+			baseQuery = baseQuery.Where("work_model_id = ?", value)
 		}
 	}
 

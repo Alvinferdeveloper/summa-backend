@@ -48,10 +48,11 @@ func GetJobPosts(c *gin.Context) {
 	filters["is_urgent"] = c.Query("is_urgent")
 	filters["date_posted"] = c.Query("date_posted")
 	filters["category_id"] = c.Query("category_id")
-	filters["work_schedule"] = c.Query("work_schedule")
-	filters["contract_type"] = c.Query("contract_type")
+	filters["work_schedule_id"] = c.Query("work_schedule_id")
+	filters["contract_type_id"] = c.Query("contract_type_id")
 	filters["salary"] = c.Query("salary")
-	filters["experience_level"] = c.Query("experience_level")
+	filters["experience_level_id"] = c.Query("experience_level_id")
+	filters["work_model_id"] = c.Query("work_model_id")
 
 	jobPostDTOs, total, hasNextPage, err := services.GetJobPosts(page, limit, userID, filters)
 	if err != nil {

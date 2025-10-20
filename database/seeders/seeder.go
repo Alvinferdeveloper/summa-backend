@@ -349,34 +349,50 @@ func seedJobPosts(db *gorm.DB, employers []models.Employer, aNeeds []models.Acce
 		return nil
 	}
 
-	features := ""
-	if len(aNeeds) > 0 {
-		features = aNeeds[0].Name
+	var accessibilityNeed models.AccessibilityNeed
+	if config.DB.First(&accessibilityNeed).Error != nil {
+		log.Println("Could not find an accessibility need to seed job posts with. Skipping.")
 	}
 
 	jobPosts := []models.JobPost{
 		{
-			EmployerID:            employers[0].ID,
-			CategoryID:            categories[0].ID,
-			Title:                 "Diseñador/a de Producto",
-			Location:              "Madrid, España",
-			IsUrgent:              false,
-			WorkModelID:           workModel.ID,
-			WorkScheduleID:        workSchedule.ID,
-			ContractTypeID:        contractType.ID,
-			ExperienceLevelID:     expLevel.ID,
-			Salary:                "€45,000 - €55,000 anuales",
-			Description:           "Buscamos un diseñador de producto apasionado por crear experiencias de usuario intuitivas y hermosas. Serás responsable de todo el ciclo de vida del diseño.",
-			Responsibilities:      "Investigación de usuarios, creación de wireframes y prototipos, diseño de interfaces de alta fidelidad, colaboración con desarrolladores.",
-			Requirements:          "Portfolio sólido que demuestre experiencia en diseño de UI/UX. Dominio de Figma, Sketch o Adobe XD. Comprensión de los principios de diseño centrado en el usuario.",
-			AccessibilityFeatures: features,
+			EmployerID:         employers[0].ID,
+			CategoryID:         categories[0].ID,
+			Title:              "Ingeniero de Software Senior (Go)",
+			Location:           "Remoto (Global)",
+			IsUrgent:           true,
+			WorkModelID:        workModel.ID,
+			WorkScheduleID:     workSchedule.ID,
+			ContractTypeID:     contractType.ID,
+			ExperienceLevelID:  expLevel.ID,
+			Salary:             "$5000 - $7000 USD mensuales",
+			Description:        "Estamos buscando un desarrollador de Go experimentado para unirse a nuestro equipo de backend. Trabajarás en microservicios de alto rendimiento y escalarás nuestra infraestructura.",
+			Responsibilities:   "Diseñar y desarrollar APIs RESTful. Escribir código limpio, mantenible y probado. Colaborar con equipos de frontend y producto.",
+			Requirements:       "+5 años de experiencia con Go. Experiencia con Docker, Kubernetes y PostgreSQL. Sólidos conocimientos de estructuras de datos y algoritmos.",
+			AccessibilityNeeds: []models.AccessibilityNeed{accessibilityNeed},
+		},
+		{
+			EmployerID:         employers[0].ID,
+			CategoryID:         categories[0].ID,
+			Title:              "Diseñador de Producto (UI/UX)",
+			Location:           "Híbrido (Madrid)",
+			IsUrgent:           false,
+			WorkModelID:        workModel.ID,
+			WorkScheduleID:     workSchedule.ID,
+			ContractTypeID:     contractType.ID,
+			ExperienceLevelID:  expLevel.ID,
+			Salary:             "€45,000 - €55,000 anuales",
+			Description:        "Buscamos un diseñador de producto apasionado por crear experiencias de usuario intuitivas y hermosas. Serás responsable de todo el ciclo de vida del diseño.",
+			Responsibilities:   "Investigación de usuarios, creación de wireframes y prototipos, diseño de interfaces de alta fidelidad. Colaboración con desarrolladores.",
+			Requirements:       "Portfolio sólido que demuestre experiencia en diseño de UI/UX. Dominio de Figma, Sketch o Adobe XD. Comprensión de los principios de diseño centrado en el usuario.",
+			AccessibilityNeeds: []models.AccessibilityNeed{accessibilityNeed},
 		},
 	}
 
 	for _, job := range jobPosts {
 		var existingJob models.JobPost
-		if db.Where("title = ?", job.Title).First(&existingJob).Error == gorm.ErrRecordNotFound {
-			if err := db.Create(&job).Error; err != nil {
+		if config.DB.Where("title = ?", job.Title).First(&existingJob).Error == gorm.ErrRecordNotFound {
+			if err := config.DB.Create(&job).Error; err != nil {
 				log.Printf("Failed to seed job post: %v", err)
 			}
 		}

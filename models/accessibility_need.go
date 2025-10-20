@@ -11,5 +11,5 @@ type AccessibilityNeed struct {
 
 	// Relationships
 	Profiles []Profile `json:"-" gorm:"many2many:profile_accessibility_needs;"`
-	JobPosts []JobPost `json:"-" gorm:"many2many:job_post_accessibility_features;"`
+	JobPosts []JobPost `json:"-" gorm:"many2many:job_post_accessibility_needs;"`
 }

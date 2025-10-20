@@ -1,7 +1,6 @@
 package services
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/Alvinferdeveloper/summa-backend/config"
@@ -11,30 +10,40 @@ import (
 )
 
 func CreateJobPost(req *dto.CreateJobPostRequest, employerID uint) (*models.JobPost, error) {
-	accessibilityFeaturesJSON, err := json.Marshal(req.AccessibilityFeatures)
-	if err != nil {
-		return nil, fmt.Errorf("failed to process accessibility features: %w", err)
-	}
-
 	jobPost := models.JobPost{
-		EmployerID:            employerID,
-		CategoryID:            req.CategoryID,
-		Title:                 req.Title,
-		Location:              req.Location,
-		IsUrgent:              req.IsUrgent,
-		WorkModelID:           req.WorkModelID,
-		WorkScheduleID:        req.WorkScheduleID,
-		ContractTypeID:        req.ContractTypeID,
-		ExperienceLevelID:     req.ExperienceLevelID,
-		Salary:                req.Salary,
-		Description:           req.Description,
-		Responsibilities:      req.Responsibilities,
-		Requirements:          req.Requirements,
-		AccessibilityFeatures: string(accessibilityFeaturesJSON),
+		EmployerID:        employerID,
+		CategoryID:        req.CategoryID,
+		Title:             req.Title,
+		Location:          req.Location,
+		IsUrgent:          req.IsUrgent,
+		WorkModelID:       req.WorkModelID,
+		WorkScheduleID:    req.WorkScheduleID,
+		ContractTypeID:    req.ContractTypeID,
+		ExperienceLevelID: req.ExperienceLevelID,
+		Salary:            req.Salary,
+		Description:       req.Description,
+		Responsibilities:  req.Responsibilities,
+		Requirements:      req.Requirements,
 	}
 
-	if err := config.DB.Create(&jobPost).Error; err != nil {
-		return nil, fmt.Errorf("failed to create job post: %w", err)
+	err := config.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&jobPost).Error; err != nil {
+			return fmt.Errorf("failed to create job post: %w", err)
+		}
+		if len(req.AccessibilityNeedIDs) > 0 {
+			var accessibilityNeeds []models.AccessibilityNeed
+			if err := tx.Where("id IN ?", req.AccessibilityNeedIDs).Find(&accessibilityNeeds).Error; err != nil {
+				return fmt.Errorf("failed to find accessibility needs: %w", err)
+			}
+			if err := tx.Model(&jobPost).Association("AccessibilityNeeds").Append(&accessibilityNeeds); err != nil {
+				return fmt.Errorf("failed to associate accessibility needs: %w", err)
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
 	}
 
 	return &jobPost, nil
@@ -63,28 +72,30 @@ func GetJobPosts(page, limit int, userID *uint, filters map[string]string) ([]dt
 		}
 		switch key {
 		case "is_urgent":
-			baseQuery = baseQuery.Where("is_urgent = ?", value == "true")
+			baseQuery = baseQuery.Where("job_posts.is_urgent = ?", value == "true")
 		case "date_posted":
 			baseQuery = baseQuery.Where("job_posts.created_at >= ?", value)
 		case "category_id":
-			baseQuery = baseQuery.Where("category_id = ?", value)
+			baseQuery = baseQuery.Where("categories.id = ?", value)
 		case "work_schedule_id":
-			baseQuery = baseQuery.Where("work_schedule_id = ?", value)
+			baseQuery = baseQuery.Where("work_schedules.id = ?", value)
 		case "experience_level_id":
-			baseQuery = baseQuery.Where("experience_level_id = ?", value)
+			baseQuery = baseQuery.Where("experience_levels.id = ?", value)
 		case "contract_type_id":
-			baseQuery = baseQuery.Where("contract_type_id = ?", value)
+			baseQuery = baseQuery.Where("contract_types.id = ?", value)
 		case "work_model_id":
-			baseQuery = baseQuery.Where("work_model_id = ?", value)
+			baseQuery = baseQuery.Where("work_models.id = ?", value)
 		}
 	}
 
-	if err := baseQuery.Count(&total).Error; err != nil {
+	// Create a separate query for counting distinct job posts
+	countQuery := baseQuery.Session(&gorm.Session{}).Distinct("job_posts.id")
+	if err := countQuery.Count(&total).Error; err != nil {
 		return nil, 0, false, fmt.Errorf("failed to count job posts: %w", err)
 	}
 
 	// Perform the find query with pagination and preloads
-	result := baseQuery.Preload("Employer").Preload("Category").Preload("ContractType").Preload("ExperienceLevel").Preload("WorkSchedule").Preload("WorkModel").Limit(limit).Offset(offset).Order("job_posts.created_at desc").Find(&jobPosts)
+	result := baseQuery.Preload("Employer").Preload("Category").Preload("ContractType").Preload("ExperienceLevel").Preload("WorkSchedule").Preload("WorkModel").Preload("AccessibilityNeeds").Limit(limit).Offset(offset).Order("job_posts.created_at desc").Find(&jobPosts)
 
 	if result.Error != nil {
 		return nil, 0, false, fmt.Errorf("failed to fetch job posts: %w", result.Error)
@@ -113,7 +124,7 @@ func GetJobPosts(page, limit int, userID *uint, filters map[string]string) ([]dt
 
 func GetJobPostById(id uint) (*models.JobPost, error) {
 	var jobPost models.JobPost
-	if err := config.DB.Preload("Employer").Preload("Category").Preload("ContractType").Preload("ExperienceLevel").Preload("WorkSchedule").Preload("WorkModel").First(&jobPost, id).Error; err != nil {
+	if err := config.DB.Preload("Employer").Preload("Category").Preload("ContractType").Preload("ExperienceLevel").Preload("WorkSchedule").Preload("WorkModel").Preload("AccessibilityNeeds").First(&jobPost, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf("job post not found")
 		}

@@ -96,6 +96,8 @@ func GetJobPosts(page, limit int, userID *uint, filters map[string]string) ([]dt
 			baseQuery = baseQuery.Where("contract_types.id = ?", value)
 		case "work_model_id":
 			baseQuery = baseQuery.Where("work_models.id = ?", value)
+		case "disability_type_id":
+			baseQuery = baseQuery.Joins("JOIN job_post_disability_types ON job_post_disability_types.job_post_id = job_posts.id").Where("job_post_disability_types.disability_type_id = ?", value)
 		}
 	}
 

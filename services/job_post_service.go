@@ -65,7 +65,7 @@ func GetJobPosts(page, limit int, userID *uint, filters map[string]string) ([]dt
 		case "is_urgent":
 			baseQuery = baseQuery.Where("is_urgent = ?", value == "true")
 		case "date_posted":
-			baseQuery = baseQuery.Where("created_at >= ?", value)
+			baseQuery = baseQuery.Where("job_posts.created_at >= ?", value)
 		case "category_id":
 			baseQuery = baseQuery.Where("category_id = ?", value)
 		case "work_schedule_id":

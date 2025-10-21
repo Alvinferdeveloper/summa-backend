@@ -80,6 +80,7 @@ func main() {
 		routes.SetupWorkScheduleRoutes(v1)
 		routes.SetupWorkModelRoutes(v1)
 		routes.SetupDisabilityTypeRoutes(v1)
+		routes.SetupCandidateRoutes(v1)
 	}
 
 	r.GET("/ping", func(c *gin.Context) {

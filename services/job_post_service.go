@@ -149,7 +149,7 @@ func GetJobPostById(id uint) (*models.JobPost, error) {
 
 func GetJobPostsByEmployerID(employerID uint) ([]dto.JobPostResponse, error) {
 	var jobPosts []models.JobPost
-	if err := config.DB.Where("employer_id = ?", employerID).Order("created_at desc").Find(&jobPosts).Error; err != nil {
+	if err := config.DB.Where("employer_id = ?", employerID).Preload("WorkModel").Order("created_at desc").Find(&jobPosts).Error; err != nil {
 		return nil, fmt.Errorf("failed to fetch employer job posts: %w", err)
 	}
 
@@ -175,6 +175,69 @@ func UpdateJobPostStatus(jobID uint, employerID uint, status string) (*models.Jo
 	jobPost.Status = status
 	if err := config.DB.Save(&jobPost).Error; err != nil {
 		return nil, fmt.Errorf("could not update job post status: %w", err)
+	}
+
+	return &jobPost, nil
+}
+
+func UpdateJobPost(jobID uint, employerID uint, req *dto.UpdateJobPostRequest) (*models.JobPost, error) {
+	var jobPost models.JobPost
+
+	err := config.DB.Transaction(func(tx *gorm.DB) error {
+		// 1. Find the job post and verify ownership
+		if err := tx.First(&jobPost, jobID).Error; err != nil {
+			return fmt.Errorf("job post not found")
+		}
+		if jobPost.EmployerID != employerID {
+			return fmt.Errorf("unauthorized to modify this job post")
+		}
+
+		// 2. Update primary fields
+		jobPost.Title = req.Title
+		jobPost.Location = req.Location
+		jobPost.IsUrgent = req.IsUrgent
+		jobPost.WorkModelID = req.WorkModelID
+		jobPost.WorkScheduleID = req.WorkScheduleID
+		jobPost.ContractTypeID = req.ContractTypeID
+		jobPost.ExperienceLevelID = req.ExperienceLevelID
+		jobPost.Salary = req.Salary
+		jobPost.CategoryID = req.CategoryID
+		jobPost.Description = req.Description
+		jobPost.Responsibilities = req.Responsibilities
+		jobPost.Requirements = req.Requirements
+
+		// 3. Update Accessibility Needs (replace existing associations)
+		var accessibilityNeeds []models.AccessibilityNeed
+		if len(req.AccessibilityNeedIDs) > 0 {
+			if err := tx.Where("id IN ?", req.AccessibilityNeedIDs).Find(&accessibilityNeeds).Error; err != nil {
+				return err
+			}
+		}
+		if err := tx.Model(&jobPost).Association("AccessibilityNeeds").Replace(&accessibilityNeeds); err != nil {
+			return err
+		}
+
+		// 4. Update Disability Types (replace existing associations)
+		var disabilityTypes []models.DisabilityType
+		if len(req.DisabilityTypeIDs) > 0 {
+			if err := tx.Where("id IN ?", req.DisabilityTypeIDs).Find(&disabilityTypes).Error; err != nil {
+				return err
+			}
+		}
+		if err := tx.Model(&jobPost).Association("DisabilityTypes").Replace(&disabilityTypes); err != nil {
+			return err
+		}
+
+		// 5. Save the updated job post
+		if err := tx.Save(&jobPost).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
 	}
 
 	return &jobPost, nil

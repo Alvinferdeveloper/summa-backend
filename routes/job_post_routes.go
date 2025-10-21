@@ -13,6 +13,7 @@ func SetupJobPostRoutes(router *gin.RouterGroup) {
 		jobPost.GET("", middlewares.AuthMiddleware("job_seeker", "employer"), controllers.GetJobPosts)
 		jobPost.GET("/:id", controllers.GetJobPostById)
 		jobPost.PATCH("/:id/status", middlewares.AuthMiddleware("employer"), controllers.UpdateJobPostStatus)
+		jobPost.PUT("/:id", middlewares.AuthMiddleware("employer"), controllers.UpdateJobPost)
 	}
 
 	employerRoutes := router.Group("/employer")

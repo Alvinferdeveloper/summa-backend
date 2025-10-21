@@ -133,3 +133,33 @@ func UpdateJobPostStatus(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Estado del empleo actualizado", "jobPost": jobPostDTO})
 }
+
+func UpdateJobPost(c *gin.Context) {
+	employerID, exists := c.Get("employer_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	jobID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de empleo inválido"})
+		return
+	}
+
+	var req dto.UpdateJobPostRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	jobPost, err := services.UpdateJobPost(uint(jobID), employerID.(uint), &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	jobPostDTO := dto.ConvertJobPostToDTO(*jobPost)
+
+	c.JSON(http.StatusOK, gin.H{"message": "Empleo actualizado exitosamente", "jobPost": jobPostDTO})
+}

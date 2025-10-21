@@ -30,10 +30,10 @@ type JobPostResponse struct {
 	Title              string                      `json:"title"`
 	Location           string                      `json:"location"`
 	IsUrgent           bool                        `json:"is_urgent"`
-	WorkModel          string                      `json:"work_model"`
-	WorkSchedule       string                      `json:"work_schedule"`
-	ContractType       string                      `json:"contract_type"`
-	ExperienceLevel    string                      `json:"experience_level"`
+	WorkModel          WorkModelDTO                `json:"work_model"`
+	WorkSchedule       WorkScheduleDTO             `json:"work_schedule"`
+	ContractType       ContractTypeDTO             `json:"contract_type"`
+	ExperienceLevel    ExperienceLevelDTO          `json:"experience_level"`
 	Salary             string                      `json:"salary"`
 	Description        string                      `json:"description"`
 	Status             string                      `json:"status"`
@@ -51,6 +51,23 @@ type UpdateJobPostStatusRequest struct {
 	Status string `json:"status" binding:"required,oneof=open closed"`
 }
 
+type UpdateJobPostRequest struct {
+	Title                string `json:"title" binding:"required"`
+	Location             string `json:"location" binding:"required"`
+	IsUrgent             bool   `json:"is_urgent"`
+	WorkModelID          uint   `json:"workModelId" binding:"required"`
+	WorkScheduleID       uint   `json:"workScheduleId" binding:"required"`
+	ContractTypeID       uint   `json:"contractTypeId" binding:"required"`
+	ExperienceLevelID    uint   `json:"experienceLevelId" binding:"required"`
+	Salary               string `json:"salary"`
+	CategoryID           uint   `json:"category_id" binding:"required"`
+	Description          string `json:"description" binding:"required"`
+	Responsibilities     string `json:"responsibilities" binding:"required"`
+	Requirements         string `json:"requirements" binding:"required"`
+	AccessibilityNeedIDs []uint `json:"accessibilityNeedIds"`
+	DisabilityTypeIDs    []uint `json:"disabilityTypeIds"`
+}
+
 // ConvertJobPostToDTO converts a JobPost model to its DTO response.
 func ConvertJobPostToDTO(jobPost models.JobPost) JobPostResponse {
 	return JobPostResponse{
@@ -60,10 +77,10 @@ func ConvertJobPostToDTO(jobPost models.JobPost) JobPostResponse {
 		Title:           jobPost.Title,
 		Location:        jobPost.Location,
 		IsUrgent:        jobPost.IsUrgent,
-		WorkModel:       jobPost.WorkModel.Name,
-		WorkSchedule:    jobPost.WorkSchedule.Name,
-		ContractType:    jobPost.ContractType.Name,
-		ExperienceLevel: jobPost.ExperienceLevel.Name,
+		WorkModel:       ConvertWorkModelToDTO(jobPost.WorkModel),
+		WorkSchedule:    ConvertWorkScheduleToDTO(jobPost.WorkSchedule),
+		ContractType:    ConvertContractTypeToDTO(jobPost.ContractType),
+		ExperienceLevel: ConvertExperienceLevelToDTO(jobPost.ExperienceLevel),
 		AccessibilityNeeds: func() []AccessibilityNeedResponse {
 			var dtos []AccessibilityNeedResponse
 			for _, an := range jobPost.AccessibilityNeeds {

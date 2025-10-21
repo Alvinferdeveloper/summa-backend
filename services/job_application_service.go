@@ -109,7 +109,7 @@ func GetJobApplicants(jobID uint, employerID uint, page int, limit int) ([]model
 
 func UpdateApplicationStatus(applicationID uint, employerID uint, status string) (*models.JobApplication, error) {
 	var application models.JobApplication
-	if err := config.DB.Preload("JobPost").First(&application, applicationID).Error; err != nil {
+	if err := config.DB.Preload("JobPost.Employer").Preload("Profile").First(&application, applicationID).Error; err != nil {
 		return nil, fmt.Errorf("postulación no encontrada")
 	}
 	if application.JobPost.EmployerID != employerID {
@@ -120,6 +120,48 @@ func UpdateApplicationStatus(applicationID uint, employerID uint, status string)
 	if err := config.DB.Save(&application).Error; err != nil {
 		return nil, fmt.Errorf("no se pudo actualizar el estado: %w", err)
 	}
+
+	// Send email notification via RabbitMQ
+	go func() {
+		var templateName string
+		var subject string
+
+		switch status {
+		case "En revisión":
+			templateName = "application_status_in_review.html"
+			subject = "Tu postulación para " + application.JobPost.Title + " está en revisión"
+		case "Aceptado":
+			templateName = "application_status_accepted.html"
+			subject = "¡Felicitaciones! Has avanzado en el proceso para " + application.JobPost.Title
+		case "Rechazado":
+			templateName = "application_status_rejected.html"
+			subject = "Actualización sobre tu postulación para " + application.JobPost.Title
+		default:
+			return
+		}
+
+		data := gin.H{
+			"ApplicantName": application.Profile.FirstName,
+			"JobTitle":      application.JobPost.Title,
+			"CompanyName":   application.JobPost.Employer.CompanyName,
+		}
+
+		body, err := utils.ParseTemplate(templateName, data)
+		if err != nil {
+			log.Printf("Failed to parse email template %s: %v", templateName, err)
+			return
+		}
+
+		task := &EmailTask{
+			To:      application.Profile.Email,
+			Subject: subject,
+			Body:    body,
+		}
+
+		if err := GlobalRabbitMQService.PublishEmailTask(task); err != nil {
+			log.Printf("Failed to publish status update email task: %v", err)
+		}
+	}()
 
 	return &application, nil
 }

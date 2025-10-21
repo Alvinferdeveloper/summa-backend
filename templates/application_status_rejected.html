@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actualización sobre tu Postulación</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f7; color: #333; }
+        .container { max-width: 600px; margin: 40px auto; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; }
+        .header { background-color: #6B7280; /* Gray */ color: #ffffff; padding: 40px; text-align: center; }
+        .header h1 { margin: 0; font-size: 28px; }
+        .content { padding: 40px; line-height: 1.6; }
+        .content h2 { color: #6B7280; font-size: 22px; }
+        .content p { font-size: 16px; margin-bottom: 20px; }
+        .button { display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .footer { background-color: #f4f4f7; padding: 20px; text-align: center; font-size: 12px; color: #777; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Actualización sobre tu Postulación</h1>
+        </div>
+        <div class="content">
+            <h2>Hola, {{.ApplicantName}}</h2>
+            <p>Queremos agradecerte por tu interés en el puesto de <strong>{{.JobTitle}}</strong> en <strong>{{.CompanyName}}</strong> y por el tiempo que dedicaste a tu postulación.</p>
+            <p>Después de una cuidadosa revisión, la empresa ha decidido continuar con otros candidatos cuyo perfil se ajustaba más a los requisitos de la vacante en esta ocasión.</p>
+            <p>Sabemos que buscar empleo puede ser un desafío, pero no te desanimes. A menudo, la competencia es alta y una decisión como esta no disminuye tus habilidades ni tu valor profesional. Te animamos a que sigas buscando nuevas oportunidades en nuestra plataforma.</p>
+            <p style="text-align: center;">
+                <a href="#" class="button">Buscar más Empleos</a>
+            </p>
+            <p>¡Te deseamos mucho éxito en tu búsqueda!</p>
+            <p>Atentamente,<br>El equipo de Summa</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2025 Summa. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</body>
+</html>

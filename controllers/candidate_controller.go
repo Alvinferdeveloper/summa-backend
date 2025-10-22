@@ -16,6 +16,8 @@ func GetCandidates(c *gin.Context) {
 	filters := make(map[string]string)
 	filters["country"] = c.Query("country")
 	filters["disability_type_id"] = c.Query("disability_type_id")
+	filters["city"] = c.Query("city")
+	filters["skill_id"] = c.Query("skill_id")
 
 	profiles, total, err := services.GetCandidates(page, limit, filters)
 	if err != nil {

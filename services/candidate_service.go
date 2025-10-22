@@ -22,7 +22,7 @@ func GetCandidates(page, limit int, filters map[string]string) ([]models.Profile
 		}
 		switch key {
 		case "country":
-			baseQuery = baseQuery.Where("country = ?", value)
+			baseQuery = baseQuery.Where("country ILIKE ?", "%"+value+"%")
 		case "disability_type_id":
 			baseQuery = baseQuery.Joins("JOIN profile_disability_types ON profile_disability_types.profile_id = profiles.id").Where("profile_disability_types.disability_type_id = ?", value)
 		case "city":

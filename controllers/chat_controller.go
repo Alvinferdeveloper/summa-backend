@@ -1,0 +1,98 @@
+package controllers
+
+import (
+	"net/http"
+	"strconv"
+
+	"github.com/Alvinferdeveloper/summa-backend/dto"
+	"github.com/Alvinferdeveloper/summa-backend/services"
+	"github.com/Alvinferdeveloper/summa-backend/utils"
+	"github.com/gin-gonic/gin"
+)
+
+func GetConversations(c *gin.Context) {
+	participantID, participantType, err := utils.GetParticipantFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	conversations, err := services.GetConversations(participantID, participantType)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve conversations"})
+		return
+	}
+
+	var dtoConversations []dto.ConversationResponseDTO
+	for _, conversation := range conversations {
+		dtoConversations = append(dtoConversations, *dto.ConvertConversationToDTO(conversation))
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": dtoConversations})
+}
+
+func GetOrCreateConversation(c *gin.Context) {
+	participantID, participantType, err := utils.GetParticipantFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	otherParticipantIDStr := c.Param("otherParticipantId")
+	otherParticipantID, err := strconv.ParseUint(otherParticipantIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid participant ID"})
+		return
+	}
+
+	var userID, employerID uint
+	switch participantType {
+	case "user":
+		userID = participantID
+		employerID = uint(otherParticipantID)
+	case "employer":
+		userID = uint(otherParticipantID)
+		employerID = participantID
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid participant type"})
+		return
+	}
+
+	conversation, err := services.GetOrCreateConversation(userID, employerID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get or create conversation"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": conversation})
+}
+
+func GetMessagesForConversation(c *gin.Context) {
+	conversationIDStr := c.Param("conversationId")
+	conversationID, err := strconv.ParseUint(conversationIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid conversation ID"})
+		return
+	}
+
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
+
+	messages, total, err := services.GetMessagesForConversation(uint(conversationID), page, limit)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve messages"})
+		return
+	}
+
+	var dtoMessages []dto.MessageResponseDTO = make([]dto.MessageResponseDTO, 0)
+	for _, message := range messages {
+		dtoMessages = append(dtoMessages, *dto.ConvertMessageToDTO(message))
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data":  dtoMessages,
+		"total": total,
+		"page":  page,
+		"limit": limit,
+	})
+}

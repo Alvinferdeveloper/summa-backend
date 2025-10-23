@@ -1,8 +1,12 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/Alvinferdeveloper/summa-backend/services"
 	"github.com/joho/godotenv"
@@ -20,9 +24,8 @@ func main() {
 	if err := services.InitRabbitMQService(); err != nil {
 		log.Fatalf("Failed to initialize RabbitMQ service: %v", err)
 	}
-
 	msgs, err := services.GlobalRabbitMQService.Channel.Consume(
-		services.GlobalRabbitMQService.Queue.Name, // queue
+		services.GlobalRabbitMQService.EmailQueue.Name, // queue
 		"",    // consumer
 		true,  // auto-ack
 		false, // exclusive
@@ -34,7 +37,8 @@ func main() {
 		log.Fatalf("Failed to register a consumer: %v", err)
 	}
 
-	var forever chan struct{}
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
 	go func() {
 		for d := range msgs {
@@ -52,5 +56,6 @@ func main() {
 	}()
 
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
-	<-forever
+	<-ctx.Done()
+	log.Println("Shutting down email worker...")
 }

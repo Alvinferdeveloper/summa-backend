@@ -9,6 +9,7 @@ import (
 	"github.com/Alvinferdeveloper/summa-backend/config"
 	"github.com/Alvinferdeveloper/summa-backend/routes"
 	"github.com/Alvinferdeveloper/summa-backend/services"
+	"github.com/Alvinferdeveloper/summa-backend/websocket"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -34,15 +35,8 @@ func main() {
 		log.Fatalf("Failed to initialize RabbitMQ service: %v", err)
 	}
 
-	/*// Configure logging to a file for Promtail
-	logFilePath := "/var/log/summa-backend/app.log"
-	logFile, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Fatalf("Failed to open log file: %v", err)
-	}
-	defer logFile.Close()
-	log.SetOutput(logFile)
-	*/
+	hub := websocket.NewHub()
+	go hub.Run()
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -82,6 +76,8 @@ func main() {
 		routes.SetupDisabilityTypeRoutes(v1)
 		routes.SetupCandidateRoutes(v1)
 		routes.SetupSkillRoutes(v1)
+		routes.SetupChatRoutes(v1)
+		routes.SetupWebSocketRoutes(v1, hub)
 	}
 
 	r.GET("/ping", func(c *gin.Context) {

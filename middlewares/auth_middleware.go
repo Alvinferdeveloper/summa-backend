@@ -14,9 +14,14 @@ import (
 func AuthMiddleware(allowedRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
+
 		if authHeader == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is required"})
-			return
+			tokenQuery := c.Query("auth")
+			if tokenQuery == "" {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization header or query param required"})
+				return
+			}
+			authHeader = fmt.Sprintf("Bearer %s", tokenQuery)
 		}
 
 		parts := strings.Split(authHeader, " ")

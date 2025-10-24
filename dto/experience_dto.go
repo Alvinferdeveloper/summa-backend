@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/Alvinferdeveloper/summa-backend/models"
+	"github.com/google/uuid"
 )
 
 type CreateExperienceRequest struct {
@@ -11,7 +12,7 @@ type CreateExperienceRequest struct {
 	Description   string     `json:"description"`
 	StartDate     time.Time  `json:"start_date" binding:"required"`
 	EndDate       *time.Time `json:"end_date"`
-	EmployerID    *uint      `json:"employer_id"`
+	EmployerID    *uuid.UUID `json:"employer_id"`
 	NewEmployerID *uint      `json:"new_employer_id"`
 }
 
@@ -20,7 +21,7 @@ type UpdateExperienceRequest struct {
 	Description   string     `json:"description"`
 	StartDate     time.Time  `json:"start_date" binding:"required"`
 	EndDate       *time.Time `json:"end_date"`
-	EmployerID    *uint      `json:"employer_id"`
+	EmployerID    *uuid.UUID `json:"employer_id"`
 	NewEmployerID *uint      `json:"new_employer_id"`
 }
 

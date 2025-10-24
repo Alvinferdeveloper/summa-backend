@@ -6,10 +6,11 @@ import (
 	"github.com/Alvinferdeveloper/summa-backend/config"
 	"github.com/Alvinferdeveloper/summa-backend/dto"
 	"github.com/Alvinferdeveloper/summa-backend/models"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
-func CreateJobPost(req *dto.CreateJobPostRequest, employerID uint) (*models.JobPost, error) {
+func CreateJobPost(req *dto.CreateJobPostRequest, employerID uuid.UUID) (*models.JobPost, error) {
 	jobPost := models.JobPost{
 		EmployerID:        employerID,
 		CategoryID:        req.CategoryID,
@@ -60,7 +61,7 @@ func CreateJobPost(req *dto.CreateJobPostRequest, employerID uint) (*models.JobP
 	return &jobPost, nil
 }
 
-func GetJobPosts(page, limit int, userID *uint, filters map[string]string) ([]dto.JobPostResponse, int64, bool, error) {
+func GetJobPosts(page, limit int, userID *uuid.UUID, filters map[string]string) ([]dto.JobPostResponse, int64, bool, error) {
 	offset := (page - 1) * limit
 
 	var jobPosts []models.JobPost
@@ -147,7 +148,7 @@ func GetJobPostById(id uint) (*models.JobPost, error) {
 	return &jobPost, nil
 }
 
-func GetJobPostsByEmployerID(employerID uint) ([]dto.JobPostResponse, error) {
+func GetJobPostsByEmployerID(employerID uuid.UUID) ([]dto.JobPostResponse, error) {
 	var jobPosts []models.JobPost
 	if err := config.DB.Where("employer_id = ?", employerID).Preload("WorkModel").Order("created_at desc").Find(&jobPosts).Error; err != nil {
 		return nil, fmt.Errorf("failed to fetch employer job posts: %w", err)
@@ -161,7 +162,7 @@ func GetJobPostsByEmployerID(employerID uint) ([]dto.JobPostResponse, error) {
 	return jobPostDTOs, nil
 }
 
-func UpdateJobPostStatus(jobID uint, employerID uint, status string) (*models.JobPost, error) {
+func UpdateJobPostStatus(jobID uint, employerID uuid.UUID, status string) (*models.JobPost, error) {
 	var jobPost models.JobPost
 	if err := config.DB.First(&jobPost, jobID).Error; err != nil {
 		return nil, fmt.Errorf("job post not found")
@@ -180,7 +181,7 @@ func UpdateJobPostStatus(jobID uint, employerID uint, status string) (*models.Jo
 	return &jobPost, nil
 }
 
-func UpdateJobPost(jobID uint, employerID uint, req *dto.UpdateJobPostRequest) (*models.JobPost, error) {
+func UpdateJobPost(jobID uint, employerID uuid.UUID, req *dto.UpdateJobPostRequest) (*models.JobPost, error) {
 	var jobPost models.JobPost
 
 	err := config.DB.Transaction(func(tx *gorm.DB) error {

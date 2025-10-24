@@ -8,6 +8,7 @@ import (
 	"github.com/Alvinferdeveloper/summa-backend/models"
 	"github.com/Alvinferdeveloper/summa-backend/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -80,7 +81,7 @@ func GetMyApplications(profileID uint) ([]models.JobApplication, error) {
 	return applications, nil
 }
 
-func GetJobApplicants(jobID uint, employerID uint, page int, limit int) ([]models.JobApplication, int64, error) {
+func GetJobApplicants(jobID uint, employerID uuid.UUID, page int, limit int) ([]models.JobApplication, int64, error) {
 	var jobPost models.JobPost
 	if err := config.DB.Where("id = ? AND employer_id = ?", jobID, employerID).First(&jobPost).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -107,7 +108,7 @@ func GetJobApplicants(jobID uint, employerID uint, page int, limit int) ([]model
 	return applications, total, nil
 }
 
-func UpdateApplicationStatus(applicationID uint, employerID uint, status string) (*models.JobApplication, error) {
+func UpdateApplicationStatus(applicationID uint, employerID uuid.UUID, status string) (*models.JobApplication, error) {
 	var application models.JobApplication
 	if err := config.DB.Preload("JobPost.Employer").Preload("Profile").First(&application, applicationID).Error; err != nil {
 		return nil, fmt.Errorf("postulación no encontrada")

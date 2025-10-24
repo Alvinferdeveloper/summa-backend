@@ -1,23 +1,26 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
 
 type Profile struct {
 	gorm.Model
-	UserID              uint   `json:"user_id" gorm:"column:user_id;unique;not null"`
-	FirstName           string `json:"first_name" gorm:"column:first_name"`
-	LastName            string `json:"last_name" gorm:"column:last_name"`
-	OnboardingCompleted bool   `json:"onboarding_completed" gorm:"column:onboarding_completed;default:false"`
-	PhoneNumber         string `json:"phone_number" gorm:"column:phone_number"`
-	City                string `json:"city" gorm:"column:city"`
-	Country             string `json:"country" gorm:"column:country"`
-	ProfilePictureURL   string `json:"profile_picture_url" gorm:"column:profile_picture_url"`
-	BannerURL           string `json:"banner_url" gorm:"column:banner_url"`
-	Address             string `json:"address" gorm:"column:address"`
-	LinkedIn            string `json:"linked_in" gorm:"column:linked_in"`
-	ResumeURL           string `json:"resume_url" gorm:"column:resume_url"`
-	Description         string `json:"description" gorm:"column:description"`
-	Email               string `json:"email" gorm:"column:email"`
+	UserID              uuid.UUID `json:"user_id" gorm:"column:user_id;unique;not null"`
+	FirstName           string    `json:"first_name" gorm:"column:first_name"`
+	LastName            string    `json:"last_name" gorm:"column:last_name"`
+	OnboardingCompleted bool      `json:"onboarding_completed" gorm:"column:onboarding_completed;default:false"`
+	PhoneNumber         string    `json:"phone_number" gorm:"column:phone_number"`
+	City                string    `json:"city" gorm:"column:city"`
+	Country             string    `json:"country" gorm:"column:country"`
+	ProfilePictureURL   string    `json:"profile_picture_url" gorm:"column:profile_picture_url"`
+	BannerURL           string    `json:"banner_url" gorm:"column:banner_url"`
+	Address             string    `json:"address" gorm:"column:address"`
+	LinkedIn            string    `json:"linked_in" gorm:"column:linked_in"`
+	ResumeURL           string    `json:"resume_url" gorm:"column:resume_url"`
+	Description         string    `json:"description" gorm:"column:description"`
+	Email               string    `json:"email" gorm:"column:email"`
 
 	// Disability and Accessibility Fields
 	DisabilityInfoConsent  bool   `json:"disability_info_consent" gorm:"column:disability_info_consent;default:false"`

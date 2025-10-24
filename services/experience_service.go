@@ -4,6 +4,7 @@ import (
 	"github.com/Alvinferdeveloper/summa-backend/config"
 	"github.com/Alvinferdeveloper/summa-backend/dto"
 	"github.com/Alvinferdeveloper/summa-backend/models"
+	"github.com/google/uuid"
 )
 
 func CreateExperience(profileID uint, req *dto.CreateExperienceRequest) (*models.Experience, error) {
@@ -25,9 +26,13 @@ func CreateExperience(profileID uint, req *dto.CreateExperienceRequest) (*models
 	return experience, nil
 }
 
-func UpdateExperience(profileID uint, experienceID uint, req *dto.UpdateExperienceRequest) (*models.Experience, error) {
+func UpdateExperience(userID uuid.UUID, experienceID uint, req *dto.UpdateExperienceRequest) (*models.Experience, error) {
+	var profile models.Profile
+	if err := config.DB.Where("user_id = ?", userID).First(&profile).Error; err != nil {
+		return nil, err
+	}
 	var experience models.Experience
-	if err := config.DB.Where("profile_id = ? AND id = ?", profileID, experienceID).First(&experience).Error; err != nil {
+	if err := config.DB.Where("profile_id = ? AND id = ?", profile.ID, experienceID).First(&experience).Error; err != nil {
 		return nil, err
 	}
 	experience.EmployerID = req.EmployerID
@@ -45,11 +50,15 @@ func UpdateExperience(profileID uint, experienceID uint, req *dto.UpdateExperien
 	return &experience, nil
 }
 
-func DeleteExperience(profileID uint, experienceID uint) error {
-	return config.DB.Where("profile_id = ?", profileID).Delete(&models.Experience{}, experienceID).Error
+func DeleteExperience(userID uuid.UUID, experienceID uint) error {
+	var profile models.Profile
+	if err := config.DB.Where("user_id = ?", userID).First(&profile).Error; err != nil {
+		return err
+	}
+	return config.DB.Where("profile_id = ? AND id = ?", profile.ID, experienceID).Delete(&models.Experience{}).Error
 }
 
-func CreateNewEmployer(newEmployer *dto.NewEmployerRequest, suggestedBy uint) error {
+func CreateNewEmployer(newEmployer *dto.NewEmployerRequest, suggestedBy uuid.UUID) error {
 	if err := config.DB.Create(&models.NewEmployer{
 		CompanyName: newEmployer.CompanyName,
 		Website:     newEmployer.Website,

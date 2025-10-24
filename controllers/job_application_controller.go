@@ -7,6 +7,7 @@ import (
 	"github.com/Alvinferdeveloper/summa-backend/dto"
 	"github.com/Alvinferdeveloper/summa-backend/services"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type ApplyToJobRequest struct {
@@ -14,11 +15,7 @@ type ApplyToJobRequest struct {
 }
 
 func ApplyToJob(c *gin.Context) {
-	userID, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+	userID, _ := c.Get("user_id")
 
 	jobID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -26,7 +23,7 @@ func ApplyToJob(c *gin.Context) {
 		return
 	}
 
-	profile, err := services.GetFullProfile(userID.(uint))
+	profile, err := services.GetFullProfile(userID.(uuid.UUID))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Perfil de candidato no encontrado"})
 		return
@@ -48,13 +45,9 @@ func ApplyToJob(c *gin.Context) {
 }
 
 func GetMyApplications(c *gin.Context) {
-	userID, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+	userID, _ := c.Get("user_id")
 
-	profile, err := services.GetFullProfile(userID.(uint))
+	profile, err := services.GetFullProfile(userID.(uuid.UUID))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Perfil de candidato no encontrado"})
 		return
@@ -75,11 +68,7 @@ func GetMyApplications(c *gin.Context) {
 }
 
 func GetJobApplicants(c *gin.Context) {
-	employerID, exists := c.Get("employer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+	employerID, _ := c.Get("employer_id")
 
 	jobID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -90,7 +79,7 @@ func GetJobApplicants(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 
-	applications, total, err := services.GetJobApplicants(uint(jobID), employerID.(uint), page, limit)
+	applications, total, err := services.GetJobApplicants(uint(jobID), employerID.(uuid.UUID), page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -110,11 +99,7 @@ func GetJobApplicants(c *gin.Context) {
 }
 
 func UpdateApplicationStatus(c *gin.Context) {
-	employerID, exists := c.Get("employer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+	employerID, _ := c.Get("employer_id")
 
 	applicationID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -128,7 +113,7 @@ func UpdateApplicationStatus(c *gin.Context) {
 		return
 	}
 
-	application, err := services.UpdateApplicationStatus(uint(applicationID), employerID.(uint), req.Status)
+	application, err := services.UpdateApplicationStatus(uint(applicationID), employerID.(uuid.UUID), req.Status)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

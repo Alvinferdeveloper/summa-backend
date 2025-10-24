@@ -6,9 +6,10 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
-func GenerateJWT(userID uint, onboardingCompleted bool) (string, error) {
+func GenerateJWT(userID uuid.UUID, onboardingCompleted bool) (string, error) {
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
 		return "", fmt.Errorf("missing environment variable %q", "JWT_SECRET")
@@ -28,12 +29,12 @@ func GenerateJWT(userID uint, onboardingCompleted bool) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
+	println(t, "token de seession")
 	return t, nil
 }
 
 // GenerateEmployerJWT creates a new JWT for a given employer ID and role.
-func GenerateEmployerJWT(employerID uint, role string) (string, error) {
+func GenerateEmployerJWT(employerID uuid.UUID, role string) (string, error) {
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
 		return "", fmt.Errorf("missing environment variable %q", "JWT_SECRET")

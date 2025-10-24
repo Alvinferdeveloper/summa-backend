@@ -6,6 +6,7 @@ import (
 	"github.com/Alvinferdeveloper/summa-backend/dto"
 	"github.com/Alvinferdeveloper/summa-backend/services"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func SearchEmployers(c *gin.Context) {
@@ -41,7 +42,7 @@ func GetMyEmployerProfile(c *gin.Context) {
 		return
 	}
 
-	employer, err := services.FindEmployerByID(employerID.(uint))
+	employer, err := services.FindEmployerByID(employerID.(uuid.UUID))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Perfil de empleador no encontrado"})
 		return
@@ -64,7 +65,7 @@ func UpdateMyEmployerProfile(c *gin.Context) {
 		return
 	}
 
-	employer, err := services.UpdateEmployerProfile(employerID.(uint), &req)
+	employer, err := services.UpdateEmployerProfile(employerID.(uuid.UUID), &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo actualizar el perfil"})
 		return

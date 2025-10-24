@@ -8,6 +8,7 @@ import (
 	"github.com/Alvinferdeveloper/summa-backend/models"
 	"github.com/Alvinferdeveloper/summa-backend/services"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func CreateNewEmployer(c *gin.Context) {
@@ -19,7 +20,7 @@ func CreateNewEmployer(c *gin.Context) {
 		return
 	}
 
-	if err := services.CreateNewEmployer(&req, userID.(uint)); err != nil {
+	if err := services.CreateNewEmployer(&req, userID.(uuid.UUID)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo crear la sugerencia de empresa"})
 		return
 	}

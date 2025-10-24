@@ -8,6 +8,7 @@ import (
 	"github.com/Alvinferdeveloper/summa-backend/dto"
 	"github.com/Alvinferdeveloper/summa-backend/models"
 	"github.com/Alvinferdeveloper/summa-backend/utils"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -111,7 +112,7 @@ func FindEmployerByName(name string) (*models.Employer, error) {
 	return &employer, nil
 }
 
-func FindEmployerByID(id uint) (*models.Employer, error) {
+func FindEmployerByID(id uuid.UUID) (*models.Employer, error) {
 	var employer models.Employer
 	if err := config.DB.First(&employer, id).Error; err != nil {
 		return nil, err
@@ -119,7 +120,7 @@ func FindEmployerByID(id uint) (*models.Employer, error) {
 	return &employer, nil
 }
 
-func UpdateEmployerProfile(id uint, req *dto.UpdateEmployerProfileRequest) (*models.Employer, error) {
+func UpdateEmployerProfile(id uuid.UUID, req *dto.UpdateEmployerProfileRequest) (*models.Employer, error) {
 	var employer models.Employer
 	if err := config.DB.First(&employer, id).Error; err != nil {
 		return nil, err

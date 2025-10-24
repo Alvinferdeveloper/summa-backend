@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Alvinferdeveloper/summa-backend/services"
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -27,29 +28,29 @@ var upgrader = websocket.Upgrader{
 }
 
 type IncomingMessage struct {
-	ConversationID uint   `json:"conversation_id"`
-	RecipientID    uint   `json:"recipient_id"`
-	RecipientType  string `json:"recipient_type"`
-	Content        string `json:"content"`
+	ConversationID uint      `json:"conversation_id"`
+	RecipientID    uuid.UUID `json:"recipient_id"`
+	RecipientType  string    `json:"recipient_type"`
+	Content        string    `json:"content"`
 }
 
 type Client struct {
 	Hub      *Hub
 	conn     *websocket.Conn
 	send     chan []byte
-	UserID   uint
+	UserID   uuid.UUID
 	UserType string
 }
 
 type PrivateMessage struct {
-	RecipientID   uint
+	RecipientID   uuid.UUID
 	RecipientType string
 	Message       []byte
 }
 
 // Hub maintains the set of active clients and broadcasts messages to them.
 type Hub struct {
-	clients    map[string]map[uint]*Client // [userType][userID]
+	clients    map[string]map[uuid.UUID]*Client // [userType][userID]
 	private    chan *PrivateMessage
 	register   chan *Client
 	unregister chan *Client
@@ -60,7 +61,7 @@ func NewHub() *Hub {
 		private:    make(chan *PrivateMessage),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
-		clients:    make(map[string]map[uint]*Client),
+		clients:    make(map[string]map[uuid.UUID]*Client),
 	}
 }
 
@@ -69,7 +70,7 @@ func (h *Hub) Run() {
 		select {
 		case client := <-h.register:
 			if h.clients[client.UserType] == nil {
-				h.clients[client.UserType] = make(map[uint]*Client)
+				h.clients[client.UserType] = make(map[uuid.UUID]*Client)
 			}
 			h.clients[client.UserType][client.UserID] = client
 		case client := <-h.unregister:
@@ -184,7 +185,7 @@ func (c *Client) writePump() {
 	}
 }
 
-func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request, userID uint, userType string) {
+func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request, userID uuid.UUID, userType string) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)

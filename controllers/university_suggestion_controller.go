@@ -7,6 +7,7 @@ import (
 	"github.com/Alvinferdeveloper/summa-backend/dto"
 	"github.com/Alvinferdeveloper/summa-backend/models"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func CreateUniversitySuggestion(c *gin.Context) {
@@ -26,7 +27,7 @@ func CreateUniversitySuggestion(c *gin.Context) {
 		SuggestedName: req.SuggestedName,
 		Country:       req.Country,
 		Website:       req.Website,
-		SuggestedBy:   userID.(uint),
+		SuggestedBy:   userID.(uuid.UUID),
 	}
 
 	if err := config.DB.Create(&suggestion).Error; err != nil {

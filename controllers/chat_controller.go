@@ -8,6 +8,7 @@ import (
 	"github.com/Alvinferdeveloper/summa-backend/services"
 	"github.com/Alvinferdeveloper/summa-backend/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func GetConversations(c *gin.Context) {
@@ -39,19 +40,19 @@ func GetOrCreateConversation(c *gin.Context) {
 	}
 
 	otherParticipantIDStr := c.Param("otherParticipantId")
-	otherParticipantID, err := strconv.ParseUint(otherParticipantIDStr, 10, 64)
+	otherParticipantID, err := uuid.Parse(otherParticipantIDStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid participant ID"})
 		return
 	}
 
-	var userID, employerID uint
+	var userID, employerID uuid.UUID
 	switch participantType {
 	case "user":
 		userID = participantID
-		employerID = uint(otherParticipantID)
+		employerID = otherParticipantID
 	case "employer":
-		userID = uint(otherParticipantID)
+		userID = otherParticipantID
 		employerID = participantID
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid participant type"})

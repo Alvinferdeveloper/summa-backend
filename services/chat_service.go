@@ -5,10 +5,11 @@ import (
 
 	"github.com/Alvinferdeveloper/summa-backend/config"
 	"github.com/Alvinferdeveloper/summa-backend/models"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
-func GetOrCreateConversation(userID, employerID uint) (*models.Conversation, error) {
+func GetOrCreateConversation(userID, employerID uuid.UUID) (*models.Conversation, error) {
 	var conversation models.Conversation
 
 	err := config.DB.Where("user_id = ? AND employer_id = ?", userID, employerID).First(&conversation).Error
@@ -33,7 +34,7 @@ func GetOrCreateConversation(userID, employerID uint) (*models.Conversation, err
 	return &conversation, nil
 }
 
-func GetConversations(participantID uint, participantType string) ([]models.Conversation, error) {
+func GetConversations(participantID uuid.UUID, participantType string) ([]models.Conversation, error) {
 	var conversations []models.Conversation
 	var query *gorm.DB
 
@@ -69,7 +70,7 @@ func GetMessagesForConversation(conversationID uint, page, limit int) ([]models.
 	return messages, total, nil
 }
 
-func CreateMessage(conversationID, senderID uint, senderType string, recipientID uint, recipientType string, content string) (*models.Message, error) {
+func CreateMessage(conversationID uint, senderID uuid.UUID, senderType string, recipientID uuid.UUID, recipientType string, content string) (*models.Message, error) {
 	message := models.Message{
 		ConversationID: conversationID,
 		SenderID:       senderID,

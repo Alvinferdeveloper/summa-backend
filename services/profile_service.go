@@ -4,9 +4,10 @@ import (
 	"github.com/Alvinferdeveloper/summa-backend/config"
 	"github.com/Alvinferdeveloper/summa-backend/dto"
 	"github.com/Alvinferdeveloper/summa-backend/models"
+	"github.com/google/uuid"
 )
 
-func CompleteOnboarding(req *dto.OnboardingRequest, userID uint) (*models.Profile, error) {
+func CompleteOnboarding(req *dto.OnboardingRequest, userID uuid.UUID) (*models.Profile, error) {
 	var profile models.Profile
 	if err := config.DB.Where("user_id = ?", userID).First(&profile).Error; err != nil {
 		return nil, err
@@ -32,7 +33,7 @@ func CompleteOnboarding(req *dto.OnboardingRequest, userID uint) (*models.Profil
 	return &profile, nil
 }
 
-func GetFullProfile(userID uint) (*models.Profile, error) {
+func GetFullProfile(userID uuid.UUID) (*models.Profile, error) {
 	var profile models.Profile
 	if err := config.DB.Where("user_id = ?", userID).
 		Preload("Skills").
@@ -57,7 +58,7 @@ func GetAccessibilityNeeds() ([]models.AccessibilityNeed, error) {
 	return accessibilityNeeds, nil
 }
 
-func UpdatePersonalInfo(userID uint, req *dto.UpdatePersonalInfoRequest) (*models.Profile, error) {
+func UpdatePersonalInfo(userID uuid.UUID, req *dto.UpdatePersonalInfoRequest) (*models.Profile, error) {
 	var profile models.Profile
 	if err := config.DB.Where("user_id = ?", userID).First(&profile).Error; err != nil {
 		return nil, err
@@ -70,7 +71,7 @@ func UpdatePersonalInfo(userID uint, req *dto.UpdatePersonalInfoRequest) (*model
 	return &profile, nil
 }
 
-func UpdateContactInfo(userID uint, req *dto.UpdateContactInfoRequest) (*models.Profile, error) {
+func UpdateContactInfo(userID uuid.UUID, req *dto.UpdateContactInfoRequest) (*models.Profile, error) {
 	var profile models.Profile
 	if err := config.DB.Where("user_id = ?", userID).First(&profile).Error; err != nil {
 		return nil, err
@@ -87,7 +88,7 @@ func UpdateContactInfo(userID uint, req *dto.UpdateContactInfoRequest) (*models.
 	return &profile, nil
 }
 
-func UpdateDescription(userID uint, req *dto.UpdateDescriptionRequest) (*models.Profile, error) {
+func UpdateDescription(userID uuid.UUID, req *dto.UpdateDescriptionRequest) (*models.Profile, error) {
 	var profile models.Profile
 	if err := config.DB.Where("user_id = ?", userID).First(&profile).Error; err != nil {
 		return nil, err
@@ -99,7 +100,7 @@ func UpdateDescription(userID uint, req *dto.UpdateDescriptionRequest) (*models.
 	return &profile, nil
 }
 
-func UpdateDisabilityInfo(userID uint, req *dto.UpdateDisabilityInfoRequest) (*models.Profile, error) {
+func UpdateDisabilityInfo(userID uuid.UUID, req *dto.UpdateDisabilityInfoRequest) (*models.Profile, error) {
 	var profile models.Profile
 	if err := config.DB.Where("user_id = ?", userID).First(&profile).Error; err != nil {
 		return nil, err
@@ -135,9 +136,13 @@ func UpdateDisabilityInfo(userID uint, req *dto.UpdateDisabilityInfoRequest) (*m
 	return &profile, nil
 }
 
-func CreateEducation(profileID uint, req *dto.CreateEducationRequest) (*models.ProfileEducation, error) {
+func CreateEducation(userID uuid.UUID, req *dto.CreateEducationRequest) (*models.ProfileEducation, error) {
+	var profile models.Profile
+	if err := config.DB.Where("user_id = ?", userID).First(&profile).Error; err != nil {
+		return nil, err
+	}
 	education := &models.ProfileEducation{
-		ProfileID:              profileID,
+		ProfileID:              profile.ID,
 		UniversityID:           req.UniversityID,
 		UniversitySuggestionID: req.UniversitySuggestionID,
 		Degree:                 req.Degree,
@@ -151,9 +156,13 @@ func CreateEducation(profileID uint, req *dto.CreateEducationRequest) (*models.P
 	return education, nil
 }
 
-func UpdateEducation(profileID uint, educationID uint, req *dto.UpdateEducationRequest) (*models.ProfileEducation, error) {
+func UpdateEducation(userID uuid.UUID, educationID uint, req *dto.UpdateEducationRequest) (*models.ProfileEducation, error) {
+	var profile models.Profile
+	if err := config.DB.Where("user_id = ?", userID).First(&profile).Error; err != nil {
+		return nil, err
+	}
 	var education models.ProfileEducation
-	if err := config.DB.Where("profile_id = ? AND id = ?", profileID, educationID).First(&education).Error; err != nil {
+	if err := config.DB.Where("profile_id = ? AND id = ?", profile.ID, educationID).First(&education).Error; err != nil {
 		return nil, err
 	}
 	education.UniversityID = req.UniversityID
@@ -168,12 +177,19 @@ func UpdateEducation(profileID uint, educationID uint, req *dto.UpdateEducationR
 	return &education, nil
 }
 
-func DeleteEducation(profileID uint, educationID uint) error {
-	return config.DB.Where("profile_id = ?", profileID).Delete(&models.ProfileEducation{}, educationID).Error
-}
-func UpdateSkills(profileID uint, req *dto.UpdateSkillsRequest) (*models.Profile, error) {
+func DeleteEducation(userID uuid.UUID, educationID uint) error {
 	var profile models.Profile
-	if err := config.DB.Where("user_id = ?", profileID).First(&profile).Error; err != nil {
+	if err := config.DB.Where("user_id = ?", userID).First(&profile).Error; err != nil {
+		return err
+	}
+	if err := config.DB.Where("profile_id = ? AND id = ?", profile.ID, educationID).Delete(&models.ProfileEducation{}).Error; err != nil {
+		return err
+	}
+	return nil
+}
+func UpdateSkills(userID uuid.UUID, req *dto.UpdateSkillsRequest) (*models.Profile, error) {
+	var profile models.Profile
+	if err := config.DB.Where("user_id = ?", userID).First(&profile).Error; err != nil {
 		return nil, err
 	}
 
@@ -198,7 +214,7 @@ func UpdateSkills(profileID uint, req *dto.UpdateSkillsRequest) (*models.Profile
 	return &profile, nil
 }
 
-func SuggestNewEmployer(userID uint, req *dto.SuggestNewEmployerRequest) (*models.NewEmployer, error) {
+func SuggestNewEmployer(userID uuid.UUID, req *dto.SuggestNewEmployerRequest) (*models.NewEmployer, error) {
 	newEmployer := &models.NewEmployer{
 		CompanyName: req.CompanyName,
 		Website:     req.Website,

@@ -7,14 +7,11 @@ import (
 	"github.com/Alvinferdeveloper/summa-backend/dto"
 	"github.com/Alvinferdeveloper/summa-backend/services"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func CreateJobPost(c *gin.Context) {
-	employerID, exists := c.Get("employer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+	employerID, _ := c.Get("employer_id")
 
 	var req dto.CreateJobPostRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -22,7 +19,7 @@ func CreateJobPost(c *gin.Context) {
 		return
 	}
 
-	jobPost, err := services.CreateJobPost(&req, employerID.(uint))
+	jobPost, err := services.CreateJobPost(&req, employerID.(uuid.UUID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create job post"})
 		return
@@ -38,9 +35,9 @@ func GetJobPosts(c *gin.Context) {
 	page, _ = strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ = strconv.Atoi(c.DefaultQuery("limit", "10"))
 
-	var userID *uint
+	var userID *uuid.UUID
 	if id, exists := c.Get("user_id"); exists {
-		uid := id.(uint)
+		uid := id.(uuid.UUID)
 		userID = &uid
 	}
 
@@ -89,13 +86,9 @@ func GetJobPostById(c *gin.Context) {
 }
 
 func GetEmployerJobPosts(c *gin.Context) {
-	employerID, exists := c.Get("employer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+	employerID, _ := c.Get("employer_id")
 
-	jobPost, err := services.GetJobPostsByEmployerID(employerID.(uint))
+	jobPost, err := services.GetJobPostsByEmployerID(employerID.(uuid.UUID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -105,11 +98,7 @@ func GetEmployerJobPosts(c *gin.Context) {
 }
 
 func UpdateJobPostStatus(c *gin.Context) {
-	employerID, exists := c.Get("employer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+	employerID, _ := c.Get("employer_id")
 
 	jobID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -123,7 +112,7 @@ func UpdateJobPostStatus(c *gin.Context) {
 		return
 	}
 
-	jobPost, err := services.UpdateJobPostStatus(uint(jobID), employerID.(uint), req.Status)
+	jobPost, err := services.UpdateJobPostStatus(uint(jobID), employerID.(uuid.UUID), req.Status)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -135,11 +124,7 @@ func UpdateJobPostStatus(c *gin.Context) {
 }
 
 func UpdateJobPost(c *gin.Context) {
-	employerID, exists := c.Get("employer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+	employerID, _ := c.Get("employer_id")
 
 	jobID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -153,7 +138,7 @@ func UpdateJobPost(c *gin.Context) {
 		return
 	}
 
-	jobPost, err := services.UpdateJobPost(uint(jobID), employerID.(uint), &req)
+	jobPost, err := services.UpdateJobPost(uint(jobID), employerID.(uuid.UUID), &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

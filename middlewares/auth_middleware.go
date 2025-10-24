@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 // AuthMiddleware validates the JWT and sets the user_id in the context.
@@ -66,19 +67,29 @@ func AuthMiddleware(allowedRoles ...string) gin.HandlerFunc {
 
 			switch role {
 			case "job_seeker":
-				userIDFloat, ok := claims["user_id"].(float64)
+				userID, ok := claims["user_id"].(string)
 				if !ok {
 					c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid user_id in token"})
 					return
 				}
-				c.Set("user_id", uint(userIDFloat))
+				uid, err := uuid.Parse(userID)
+				if err != nil {
+					c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid user_id in token"})
+					return
+				}
+				c.Set("user_id", uid)
 			case "employer":
-				employerIDFloat, ok := claims["employer_id"].(float64)
+				employerID, ok := claims["employer_id"].(string)
 				if !ok {
 					c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid employer_id in token"})
 					return
 				}
-				c.Set("employer_id", uint(employerIDFloat))
+				uid, err := uuid.Parse(employerID)
+				if err != nil {
+					c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid employer_id in token"})
+					return
+				}
+				c.Set("employer_id", uid)
 			default:
 				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Invalid or unsupported role"})
 				return

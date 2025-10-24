@@ -7,15 +7,12 @@ import (
 	"github.com/Alvinferdeveloper/summa-backend/dto"
 	"github.com/Alvinferdeveloper/summa-backend/services"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 func CompleteOnboarding(c *gin.Context) {
-	userID, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+	userID, _ := c.Get("user_id")
 
 	var req dto.OnboardingRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -23,7 +20,7 @@ func CompleteOnboarding(c *gin.Context) {
 		return
 	}
 
-	_, err := services.CompleteOnboarding(&req, userID.(uint))
+	_, err := services.CompleteOnboarding(&req, userID.(uuid.UUID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update profile"})
 		return
@@ -33,13 +30,9 @@ func CompleteOnboarding(c *gin.Context) {
 }
 
 func GetMyProfile(c *gin.Context) {
-	userID, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+	userID, _ := c.Get("user_id")
 
-	profile, err := services.GetFullProfile(userID.(uint))
+	profile, err := services.GetFullProfile(userID.(uuid.UUID))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Profile not found"})
 		return
@@ -68,11 +61,7 @@ func GetAccessibilityNeeds(c *gin.Context) {
 
 // UpdatePersonalInfo handles updating the basic personal information of a profile.
 func UpdatePersonalInfo(c *gin.Context) {
-	userID, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+	userID, _ := c.Get("user_id")
 
 	var req dto.UpdatePersonalInfoRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -80,7 +69,7 @@ func UpdatePersonalInfo(c *gin.Context) {
 		return
 	}
 
-	_, err := services.UpdatePersonalInfo(userID.(uint), &req)
+	_, err := services.UpdatePersonalInfo(userID.(uuid.UUID), &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update personal info"})
 		return
@@ -91,11 +80,7 @@ func UpdatePersonalInfo(c *gin.Context) {
 
 // UpdateContactInfo handles updating the contact information of a profile.
 func UpdateContactInfo(c *gin.Context) {
-	userID, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+	userID, _ := c.Get("user_id")
 
 	var req dto.UpdateContactInfoRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -103,7 +88,7 @@ func UpdateContactInfo(c *gin.Context) {
 		return
 	}
 
-	_, err := services.UpdateContactInfo(userID.(uint), &req)
+	_, err := services.UpdateContactInfo(userID.(uuid.UUID), &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update contact info"})
 		return
@@ -114,11 +99,7 @@ func UpdateContactInfo(c *gin.Context) {
 
 // UpdateDescription handles updating the personal description of a profile.
 func UpdateDescription(c *gin.Context) {
-	userID, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+	userID, _ := c.Get("user_id")
 
 	var req dto.UpdateDescriptionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -126,7 +107,7 @@ func UpdateDescription(c *gin.Context) {
 		return
 	}
 
-	_, err := services.UpdateDescription(userID.(uint), &req)
+	_, err := services.UpdateDescription(userID.(uuid.UUID), &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update description"})
 		return
@@ -149,7 +130,7 @@ func UpdateDisabilityInfo(c *gin.Context) {
 		return
 	}
 
-	_, err := services.UpdateDisabilityInfo(userID.(uint), &req)
+	_, err := services.UpdateDisabilityInfo(userID.(uuid.UUID), &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update disability info"})
 		return
@@ -178,7 +159,7 @@ func UpdateExperience(c *gin.Context) {
 		return
 	}
 
-	_, err = services.UpdateExperience(userID.(uint), uint(experienceID), &req)
+	_, err = services.UpdateExperience(userID.(uuid.UUID), uint(experienceID), &req)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Experience not found"})
@@ -205,7 +186,7 @@ func DeleteExperience(c *gin.Context) {
 		return
 	}
 
-	if err := services.DeleteExperience(userID.(uint), uint(experienceID)); err != nil {
+	if err := services.DeleteExperience(userID.(uuid.UUID), uint(experienceID)); err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Experience not found"})
 			return
@@ -231,7 +212,7 @@ func CreateEducation(c *gin.Context) {
 		return
 	}
 
-	_, err := services.CreateEducation(userID.(uint), &req)
+	_, err := services.CreateEducation(userID.(uuid.UUID), &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create education"})
 		return
@@ -260,7 +241,7 @@ func UpdateEducation(c *gin.Context) {
 		return
 	}
 
-	_, err = services.UpdateEducation(userID.(uint), uint(educationID), &req)
+	_, err = services.UpdateEducation(userID.(uuid.UUID), uint(educationID), &req)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Education not found"})
@@ -287,7 +268,7 @@ func DeleteEducation(c *gin.Context) {
 		return
 	}
 
-	if err := services.DeleteEducation(userID.(uint), uint(educationID)); err != nil {
+	if err := services.DeleteEducation(userID.(uuid.UUID), uint(educationID)); err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Education not found"})
 			return
@@ -313,7 +294,7 @@ func UpdateSkills(c *gin.Context) {
 		return
 	}
 
-	_, err := services.UpdateSkills(userID.(uint), &req)
+	_, err := services.UpdateSkills(userID.(uuid.UUID), &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update skills"})
 		return
@@ -324,11 +305,7 @@ func UpdateSkills(c *gin.Context) {
 
 // SuggestNewEmployer handles a job seeker's request to suggest a new employer.
 func SuggestNewEmployer(c *gin.Context) {
-	userID, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+	userID, _ := c.Get("user_id")
 
 	var req dto.SuggestNewEmployerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -336,7 +313,7 @@ func SuggestNewEmployer(c *gin.Context) {
 		return
 	}
 
-	newEmployer, err := services.SuggestNewEmployer(userID.(uint), &req)
+	newEmployer, err := services.SuggestNewEmployer(userID.(uuid.UUID), &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to suggest new employer"})
 		return
@@ -352,12 +329,6 @@ func SuggestNewEmployer(c *gin.Context) {
 }
 
 func GetCandidateProfileForEmployer(c *gin.Context) {
-	_, exists := c.Get("employer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: Only employers can view candidate profiles"})
-		return
-	}
-
 	profileID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de perfil inválido"})

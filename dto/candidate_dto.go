@@ -1,9 +1,12 @@
 package dto
 
-import "github.com/Alvinferdeveloper/summa-backend/models"
+import (
+	"github.com/Alvinferdeveloper/summa-backend/models"
+	"github.com/google/uuid"
+)
 
 type CandidateResponseDTO struct {
-	ID                     uint   `json:"id"`
+	ID                     uuid.UUID   `json:"id"`
 	FirstName              string `json:"first_name"`
 	LastName               string `json:"last_name"`
 	PhoneNumber            string `json:"phone_number"`
@@ -20,7 +23,7 @@ type CandidateResponseDTO struct {
 
 func ConvertProfileToCandidateDTO(profile models.Profile) CandidateResponseDTO {
 	return CandidateResponseDTO{
-		ID:                     profile.ID,
+		ID:                     profile.UserID,
 		FirstName:              profile.FirstName,
 		LastName:               profile.LastName,
 		PhoneNumber:            profile.PhoneNumber,

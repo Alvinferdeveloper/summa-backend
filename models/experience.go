@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -18,8 +19,8 @@ type Experience struct {
 	EndDate     *time.Time `json:"end_date" gorm:"column:end_date"`
 
 	// An experience record is linked to either an existing employer or a suggested one.
-	EmployerID    *uint `json:"employer_id,omitempty" gorm:"column:employer_id"`
-	NewEmployerID *uint `json:"new_employer_id,omitempty" gorm:"column:new_employer_id"`
+	EmployerID    *uuid.UUID `json:"employer_id,omitempty" gorm:"column:employer_id"`
+	NewEmployerID *uint      `json:"new_employer_id,omitempty" gorm:"column:new_employer_id"`
 
 	// Relationships
 	Employer    *Employer    `json:"employer,omitempty"`

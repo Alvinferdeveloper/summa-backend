@@ -1,6 +1,8 @@
 package dto
 
 import (
+	"time"
+
 	"github.com/Alvinferdeveloper/summa-backend/models"
 	"github.com/google/uuid"
 )
@@ -13,6 +15,7 @@ type MessageResponseDTO struct {
 	RecipientID    uuid.UUID `json:"recipient_id"`
 	RecipientType  string    `json:"recipient_type"`
 	Content        string    `json:"content"`
+	CreatedAt      time.Time `json:"created_at"`
 	Read           bool      `json:"read"`
 }
 
@@ -25,6 +28,7 @@ func ConvertMessageToDTO(message models.Message) *MessageResponseDTO {
 		RecipientID:    message.RecipientID,
 		RecipientType:  message.RecipientType,
 		Content:        message.Content,
+		CreatedAt:      message.CreatedAt,
 		Read:           message.Read,
 	}
 }

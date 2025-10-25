@@ -65,7 +65,9 @@ func GetOrCreateConversation(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": conversation})
+	conversationDTO := dto.ConvertConversationToDTO(*conversation)
+
+	c.JSON(http.StatusOK, gin.H{"data": conversationDTO})
 }
 
 func GetMessagesForConversation(c *gin.Context) {

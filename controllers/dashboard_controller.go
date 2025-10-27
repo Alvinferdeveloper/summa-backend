@@ -43,3 +43,15 @@ func GetCandidateSkillInsights(c *gin.Context) {
 
 	c.JSON(http.StatusOK, skills)
 }
+
+func GetDisabilityInsights(c *gin.Context) {
+	employerID, _ := c.Get("employer_id")
+
+	insights, err := services.GetDisabilityInsights(employerID.(uuid.UUID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener los insights de discapacidad"})
+		return
+	}
+
+	c.JSON(http.StatusOK, insights)
+}

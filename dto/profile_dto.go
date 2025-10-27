@@ -177,8 +177,9 @@ func ConvertProfileToFullDTO(profile models.Profile) FullProfileResponseDTO {
 		}
 		if edu.UniversitySuggestion != nil {
 			educations[i].University = &UniversitySummaryResponse{
-				ID:   edu.UniversitySuggestion.ID,
-				Name: edu.UniversitySuggestion.SuggestedName,
+				ID:      edu.UniversitySuggestion.ID,
+				Name:    edu.UniversitySuggestion.SuggestedName,
+				Address: edu.UniversitySuggestion.Country,
 			}
 		}
 	}

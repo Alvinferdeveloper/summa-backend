@@ -92,7 +92,7 @@ type ExperienceResponse struct {
 	Description string                      `json:"description"`
 	StartDate   time.Time                   `json:"start_date"`
 	EndDate     *time.Time                  `json:"end_date"`
-	Employer    *EmployerResponseDTO        `json:"employer,omitempty"`
+	Employer    *EmployerSummaryResponse    `json:"employer,omitempty"`
 	NewEmployer *NewEmployerSummaryResponse `json:"new_employer,omitempty"`
 }
 type EducationResponse struct {
@@ -120,9 +120,15 @@ type UniversitySummaryResponse struct {
 	Address string `json:"address"`
 	LogoURL string `json:"logo_url"`
 }
+type EmployerSummaryResponse struct {
+	ID          interface{} `json:"id"`
+	CompanyName string      `json:"company_name"`
+	LogoURL     string      `json:"logo_url"`
+	Address     string      `json:"address"`
+}
 type UniversitySuggestionSummaryResponse struct {
-	ID            uint   `json:"id"`
-	SuggestedName string `json:"suggested_name"`
+	ID   uint   `json:"id"`
+	Name string `json:"name"`
 }
 
 func ConvertProfileToFullDTO(profile models.Profile) FullProfileResponseDTO {
@@ -137,7 +143,7 @@ func ConvertProfileToFullDTO(profile models.Profile) FullProfileResponseDTO {
 			EndDate:     exp.EndDate,
 		}
 		if exp.Employer != nil {
-			experiences[i].Employer = &EmployerResponseDTO{
+			experiences[i].Employer = &EmployerSummaryResponse{
 				ID:          exp.Employer.ID,
 				CompanyName: exp.Employer.CompanyName,
 				LogoURL:     exp.Employer.LogoURL,
@@ -145,7 +151,7 @@ func ConvertProfileToFullDTO(profile models.Profile) FullProfileResponseDTO {
 			}
 		}
 		if exp.NewEmployer != nil {
-			experiences[i].NewEmployer = &NewEmployerSummaryResponse{
+			experiences[i].Employer = &EmployerSummaryResponse{
 				ID:          exp.NewEmployer.ID,
 				CompanyName: exp.NewEmployer.CompanyName,
 			}
@@ -170,9 +176,9 @@ func ConvertProfileToFullDTO(profile models.Profile) FullProfileResponseDTO {
 			}
 		}
 		if edu.UniversitySuggestion != nil {
-			educations[i].UniversitySuggestion = &UniversitySuggestionSummaryResponse{
-				ID:            edu.UniversitySuggestion.ID,
-				SuggestedName: edu.UniversitySuggestion.SuggestedName,
+			educations[i].University = &UniversitySummaryResponse{
+				ID:   edu.UniversitySuggestion.ID,
+				Name: edu.UniversitySuggestion.SuggestedName,
 			}
 		}
 	}

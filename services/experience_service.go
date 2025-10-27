@@ -58,15 +58,17 @@ func DeleteExperience(userID uuid.UUID, experienceID uint) error {
 	return config.DB.Where("profile_id = ? AND id = ?", profile.ID, experienceID).Delete(&models.Experience{}).Error
 }
 
-func CreateNewEmployer(newEmployer *dto.NewEmployerRequest, suggestedBy uuid.UUID) error {
-	if err := config.DB.Create(&models.NewEmployer{
+func CreateNewEmployer(newEmployer *dto.NewEmployerRequest, suggestedBy uuid.UUID) (*models.NewEmployer, error) {
+	employer := &models.NewEmployer{
 		CompanyName: newEmployer.CompanyName,
 		Website:     newEmployer.Website,
 		SuggestedBy: suggestedBy,
 		Status:      "pending",
-	}).Error; err != nil {
-		return err
 	}
 
-	return nil
+	if err := config.DB.Create(employer).Error; err != nil {
+		return nil, err
+	}
+
+	return employer, nil
 }

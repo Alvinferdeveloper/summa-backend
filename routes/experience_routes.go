@@ -9,7 +9,7 @@ import (
 func SetupExperienceRoutes(router *gin.RouterGroup) {
 	newEmployer := router.Group("/new-employers")
 	{
-		newEmployer.POST("/", middlewares.AuthMiddleware("job_seeker"), controllers.CreateNewEmployer)
+		newEmployer.POST("", middlewares.AuthMiddleware("job_seeker"), controllers.CreateNewEmployer)
 	}
 
 	profile := router.Group("/profile")

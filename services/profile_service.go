@@ -5,6 +5,7 @@ import (
 	"github.com/Alvinferdeveloper/summa-backend/dto"
 	"github.com/Alvinferdeveloper/summa-backend/models"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 func CompleteOnboarding(req *dto.OnboardingRequest, userID uuid.UUID) (*models.Profile, error) {
@@ -35,14 +36,22 @@ func CompleteOnboarding(req *dto.OnboardingRequest, userID uuid.UUID) (*models.P
 
 func GetFullProfile(userID uuid.UUID) (*models.Profile, error) {
 	var profile models.Profile
-	if err := config.DB.Where("user_id = ?", userID).
+
+	if err := config.DB.
+		Where("user_id = ?", userID).
 		Preload("Skills").
-		Preload("Experiences.Employer").
-		Preload("Experiences.NewEmployer").
-		Preload("Educations.University").
-		Preload("Educations.UniversitySuggestion").
 		Preload("DisabilityTypes").
 		Preload("AccessibilityNeeds").
+		Preload("Experiences", func(db *gorm.DB) *gorm.DB {
+			return db.Order("created_at DESC")
+		}).
+		Preload("Experiences.Employer").
+		Preload("Experiences.NewEmployer").
+		Preload("Educations", func(db *gorm.DB) *gorm.DB {
+			return db.Order("created_at DESC")
+		}).
+		Preload("Educations.University").
+		Preload("Educations.UniversitySuggestion").
 		First(&profile).Error; err != nil {
 		return nil, err
 	}

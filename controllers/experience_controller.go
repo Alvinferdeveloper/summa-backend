@@ -20,12 +20,13 @@ func CreateNewEmployer(c *gin.Context) {
 		return
 	}
 
-	if err := services.CreateNewEmployer(&req, userID.(uuid.UUID)); err != nil {
+	employer, err := services.CreateNewEmployer(&req, userID.(uuid.UUID))
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo crear la sugerencia de empresa"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Sugerencia de empresa creada exitosamente"})
+	c.JSON(http.StatusCreated, gin.H{"message": "Sugerencia de empresa creada exitosamente", "employer": dto.ConverNewEmployerToDTO(*employer)})
 }
 
 func CreateExperience(c *gin.Context) {

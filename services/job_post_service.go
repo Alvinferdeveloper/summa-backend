@@ -243,3 +243,52 @@ func UpdateJobPost(jobID uint, employerID uuid.UUID, req *dto.UpdateJobPostReque
 
 	return &jobPost, nil
 }
+
+func CalculateCompatibility(profileID uint, jobPostID uint) (*dto.CompatibilityResponse, error) {
+	var profile models.Profile
+	var jobPost models.JobPost
+
+	if err := config.DB.Preload("AccessibilityNeeds").First(&profile, profileID).Error; err != nil {
+		return nil, fmt.Errorf("profile not found")
+	}
+	if err := config.DB.Preload("AccessibilityNeeds").First(&jobPost, jobPostID).Error; err != nil {
+		return nil, fmt.Errorf("job post not found")
+	}
+
+	profileNeeds := make(map[uint]string)
+	for _, need := range profile.AccessibilityNeeds {
+		profileNeeds[need.ID] = need.Name
+	}
+
+	jobFeatures := make(map[uint]string)
+	for _, feature := range jobPost.AccessibilityNeeds {
+		jobFeatures[feature.ID] = feature.Name
+	}
+
+	var metNeeds []string
+	var unmetNeeds []string
+	metCount := 0
+
+	for id, name := range profileNeeds {
+		if _, found := jobFeatures[id]; found {
+			metCount++
+			metNeeds = append(metNeeds, name)
+		} else {
+			unmetNeeds = append(unmetNeeds, name)
+		}
+	}
+
+	var score float64
+	if len(profileNeeds) > 0 {
+		score = (float64(metCount) / float64(len(profileNeeds))) * 100
+	} else {
+		score = 100
+	}
+
+	return &dto.CompatibilityResponse{
+		Score:               score,
+		MetNeeds:            metNeeds,
+		UnmetNeeds:          unmetNeeds,
+		TotalCandidateNeeds: len(profileNeeds),
+	}, nil
+}

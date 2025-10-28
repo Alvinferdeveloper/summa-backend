@@ -27,6 +27,10 @@ func main() {
 
 	services.InitS3Uploader()
 
+	if err := services.InitCacheService(); err != nil {
+		log.Fatalf("Failed to initialize cache service: %v", err)
+	}
+
 	if err := services.InitEmailService(); err != nil {
 		log.Fatalf("Failed to initialize email service: %v", err)
 	}

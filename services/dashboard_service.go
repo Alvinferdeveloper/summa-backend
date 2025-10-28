@@ -1,6 +1,8 @@
 package services
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/Alvinferdeveloper/summa-backend/config"
@@ -76,6 +78,45 @@ func GetDisabilityInsights(employerID uuid.UUID) ([]dto.DisabilityInsight, error
 		Order("count desc").
 		Scan(&insights).Error; err != nil {
 		return nil, err
+	}
+
+	return insights, nil
+}
+
+func GetApplicantLocations(employerID uuid.UUID) ([]dto.LocationInsight, error) {
+	var locations []struct {
+		City    string
+		Country string
+	}
+
+	jobIDsSubQuery := config.DB.Model(&models.JobPost{}).Select("id").Where("employer_id = ?", employerID)
+	profileIDsSubQuery := config.DB.Model(&models.JobApplication{}).Select("profile_id").Where("job_post_id IN (?)", jobIDsSubQuery)
+
+	if err := config.DB.Model(&models.Profile{}).Select("city, country").Where("id IN (?) AND city != '' AND country != ''", profileIDsSubQuery).Scan(&locations).Error; err != nil {
+		return nil, err
+	}
+
+	// Group and count locations
+	locationCounts := make(map[string]int64)
+	for _, loc := range locations {
+		locationCounts[fmt.Sprintf("%s, %s", loc.City, loc.Country)]++
+	}
+
+	var insights []dto.LocationInsight
+	for loc, count := range locationCounts {
+		cityCountry := strings.Split(loc, ", ")
+		coords, err := GetCoordsForLocation(cityCountry[0], cityCountry[1])
+		if err != nil {
+			fmt.Printf("Geocoding error for %s: %v\n", loc, err)
+			continue
+		}
+
+		insights = append(insights, dto.LocationInsight{
+			Location:  loc,
+			Count:     count,
+			Latitude:  coords.Latitude,
+			Longitude: coords.Longitude,
+		})
 	}
 
 	return insights, nil

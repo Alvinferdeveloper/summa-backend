@@ -55,3 +55,15 @@ func GetDisabilityInsights(c *gin.Context) {
 
 	c.JSON(http.StatusOK, insights)
 }
+
+func GetApplicantLocations(c *gin.Context) {
+	employerID, _ := c.Get("employer_id")
+
+	locations, err := services.GetApplicantLocations(employerID.(uuid.UUID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener las ubicaciones de los postulantes"})
+		return
+	}
+
+	c.JSON(http.StatusOK, locations)
+}

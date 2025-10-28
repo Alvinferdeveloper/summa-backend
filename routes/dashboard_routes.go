@@ -14,5 +14,6 @@ func SetupDashboardRoutes(router *gin.RouterGroup) {
 		dashboard.GET("/pipeline", controllers.GetPipeline)
 		dashboard.GET("/candidate-insights/skills", controllers.GetCandidateSkillInsights)
 		dashboard.GET("/candidate-insights/disabilities", controllers.GetDisabilityInsights)
+		dashboard.GET("/candidate-insights/locations", controllers.GetApplicantLocations)
 	}
 }

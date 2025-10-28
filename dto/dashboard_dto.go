@@ -20,3 +20,10 @@ type SkillInsight struct {
 	Name  string `json:"name"`
 	Count int64  `json:"count"`
 }
+
+type LocationInsight struct {
+	Location  string  `json:"location"`
+	Count     int64   `json:"count"`
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
+}

@@ -1,4 +1,12 @@
 services:
+  redis:
+    image: redis:alpine
+    container_name: redis
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "1234"]
+    volumes:
+        - redis_data:/data
+    ports:
+        - "6379:6379"
   db:
     container_name: summa_db
     image: postgres:latest
@@ -74,6 +82,7 @@ services:
       - db
       - rabbitmq
       - loki
+      - redis
 
 volumes:
   db-data:
@@ -81,3 +90,4 @@ volumes:
   loki-data:
   grafana-data:
   backend-logs:
+  redis_data:

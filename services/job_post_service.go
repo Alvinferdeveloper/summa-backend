@@ -16,6 +16,8 @@ func CreateJobPost(req *dto.CreateJobPostRequest, employerID uuid.UUID) (*models
 		CategoryID:        req.CategoryID,
 		Title:             req.Title,
 		Location:          req.Location,
+		Latitude:          req.Latitude,
+		Longitude:         req.Longitude,
 		IsUrgent:          req.IsUrgent,
 		WorkModelID:       req.WorkModelID,
 		WorkScheduleID:    req.WorkScheduleID,

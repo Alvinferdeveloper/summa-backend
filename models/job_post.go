@@ -12,6 +12,8 @@ type JobPost struct {
 	CategoryID        uint      `json:"category_id" gorm:"column:category_id;not null"`
 	Title             string    `json:"title" gorm:"column:title;not null"`
 	Location          string    `json:"location" gorm:"column:location;not null"`
+	Latitude          float64   `json:"latitude" gorm:"column:latitude"`
+	Longitude         float64   `json:"longitude" gorm:"column:longitude"`
 	IsUrgent          bool      `json:"is_urgent" gorm:"column:is_urgent;default:false"`
 	WorkModelID       uint      `json:"work_model_id" gorm:"column:work_model_id;not null"`
 	WorkScheduleID    uint      `json:"work_schedule_id" gorm:"column:work_schedule_id;not null"`

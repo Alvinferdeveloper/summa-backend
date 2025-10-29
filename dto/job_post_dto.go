@@ -7,20 +7,22 @@ import (
 )
 
 type CreateJobPostRequest struct {
-	Title                string `json:"title" binding:"required"`
-	Location             string `json:"location" binding:"required"`
-	IsUrgent             bool   `json:"is_urgent"`
-	WorkModelID          uint   `json:"workModelId" binding:"required"`
-	WorkScheduleID       uint   `json:"workScheduleId" binding:"required"`
-	ContractTypeID       uint   `json:"contractTypeId" binding:"required"`
-	ExperienceLevelID    uint   `json:"experienceLevelId" binding:"required"`
-	Salary               string `json:"salary"`
-	CategoryID           uint   `json:"category_id" binding:"required"`
-	Description          string `json:"description" binding:"required"`
-	Responsibilities     string `json:"responsibilities" binding:"required"`
-	Requirements         string `json:"requirements" binding:"required"`
-	AccessibilityNeedIDs []uint `json:"accessibilityNeedIds"`
-	DisabilityTypeIDs    []uint `json:"disabilityTypeIds"`
+	Title                string  `json:"title" binding:"required"`
+	Location             string  `json:"location" binding:"required"`
+	Latitude             float64 `json:"latitude"`
+	Longitude            float64 `json:"longitude"`
+	IsUrgent             bool    `json:"is_urgent"`
+	WorkModelID          uint    `json:"workModelId" binding:"required"`
+	WorkScheduleID       uint    `json:"workScheduleId" binding:"required"`
+	ContractTypeID       uint    `json:"contractTypeId" binding:"required"`
+	ExperienceLevelID    uint    `json:"experienceLevelId" binding:"required"`
+	Salary               string  `json:"salary"`
+	CategoryID           uint    `json:"category_id" binding:"required"`
+	Description          string  `json:"description" binding:"required"`
+	Responsibilities     string  `json:"responsibilities" binding:"required"`
+	Requirements         string  `json:"requirements" binding:"required"`
+	AccessibilityNeedIDs []uint  `json:"accessibilityNeedIds"`
+	DisabilityTypeIDs    []uint  `json:"disabilityTypeIds"`
 }
 
 type JobPostResponse struct {

@@ -84,6 +84,7 @@ func main() {
 		routes.SetupWebSocketRoutes(v1, hub)
 		routes.SetupDashboardRoutes(v1)
 		routes.SetupCompatibilityRoutes(v1)
+		routes.SetupInterviewRoutes(v1)
 	}
 
 	r.GET("/ping", func(c *gin.Context) {

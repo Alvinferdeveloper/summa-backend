@@ -1,0 +1,18 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Respuesta a Entrevista</title>
+</head>
+<body>
+    <h2>Respuesta a la Invitación de Entrevista</h2>
+    <p>Hola {{.EmployerName}},</p>
+    <p>El candidato <strong>{{.ApplicantName}}</strong> ha respondido a la invitación de entrevista para el puesto de <strong>{{.JobTitle}}</strong>.</p>
+    <p><strong>Respuesta:</strong> {{.ResponseStatus}}</p>
+    {{if .Accommodations}}
+    <p><strong>Adaptaciones Solicitadas:</strong></p>
+    <p>{{.Accommodations}}</p>
+    {{end}}
+    <p>Puedes ver los detalles en tu dashboard.</p>
+</body>
+</html>

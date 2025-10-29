@@ -6,17 +6,6 @@ import (
 	"github.com/Alvinferdeveloper/summa-backend/models"
 )
 
-type JobApplicationResponse struct {
-	ID                     uint      `json:"id"`
-	CreatedAt              time.Time `json:"created_at"`
-	Status                 string    `json:"status"`
-	CoverLetter            string    `json:"cover_letter"`
-	ResumeURLAtApplication string    `json:"resume_url_at_application"`
-
-	Applicant *ApplicantSummaryResponse `json:"applicant"`
-	JobPost   *JobPostSummaryResponse   `json:"job_post"`
-}
-
 type ApplicantSummaryResponse struct {
 	ProfileID         uint   `json:"profile_id"`
 	FirstName         string `json:"first_name"`
@@ -37,6 +26,27 @@ type UpdateApplicationStatusRequest struct {
 	Status string `json:"status" binding:"required"`
 }
 
+type JobApplicationResponse struct {
+	ID                     uint      `json:"id"`
+	CreatedAt              time.Time `json:"created_at"`
+	Status                 string    `json:"status"`
+	CoverLetter            string    `json:"cover_letter"`
+	ResumeURLAtApplication string    `json:"resume_url_at_application"`
+
+	Applicant *ApplicantSummaryResponse `json:"applicant"`
+	JobPost   *JobPostSummaryResponse   `json:"job_post"`
+	Interview *InterviewResponse        `json:"interview,omitempty"`
+}
+
+type InterviewResponse struct {
+	ID                      uint      `json:"id"`
+	ScheduledAt             time.Time `json:"scheduled_at"`
+	Format                  string    `json:"format"`
+	Notes                   string    `json:"notes"`
+	CandidateResponseStatus string    `json:"candidate_response_status"`
+	RequestedAccommodations string    `json:"requested_accommodations"`
+}
+
 func ConvertJobApplicationToDTO(app models.JobApplication) JobApplicationResponse {
 	applicantSummary := ApplicantSummaryResponse{
 		ProfileID:         app.Profile.ID,
@@ -54,6 +64,18 @@ func ConvertJobApplicationToDTO(app models.JobApplication) JobApplicationRespons
 		Employer:    ConvertEmployerToDTO(app.JobPost.Employer),
 	}
 
+	var interviewDTO *InterviewResponse
+	if app.Interview != nil {
+		interviewDTO = &InterviewResponse{
+			ID:                      app.Interview.ID,
+			ScheduledAt:             app.Interview.ScheduledAt,
+			Format:                  app.Interview.Format,
+			Notes:                   app.Interview.Notes,
+			CandidateResponseStatus: app.Interview.CandidateResponseStatus,
+			RequestedAccommodations: app.Interview.RequestedAccommodations,
+		}
+	}
+
 	return JobApplicationResponse{
 		ID:                     app.ID,
 		CreatedAt:              app.CreatedAt,
@@ -62,5 +84,6 @@ func ConvertJobApplicationToDTO(app models.JobApplication) JobApplicationRespons
 		ResumeURLAtApplication: app.ResumeURLAtApplication,
 		Applicant:              &applicantSummary,
 		JobPost:                &jobPostSummary,
+		Interview:              interviewDTO,
 	}
 }

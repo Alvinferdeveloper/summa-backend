@@ -265,8 +265,8 @@ func CalculateCompatibility(profileID uint, jobPostID uint) (*dto.CompatibilityR
 		jobFeatures[feature.ID] = feature.Name
 	}
 
-	var metNeeds []string
-	var unmetNeeds []string
+	var metNeeds []string = []string{}
+	var unmetNeeds []string = []string{}
 	metCount := 0
 
 	for id, name := range profileNeeds {

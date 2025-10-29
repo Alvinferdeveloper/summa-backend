@@ -75,7 +75,7 @@ func CreateJobApplication(profile *models.Profile, jobID uint, coverLetter strin
 
 func GetMyApplications(profileID uint) ([]models.JobApplication, error) {
 	var applications []models.JobApplication
-	if err := config.DB.Preload("JobPost.Employer").Where("profile_id = ?", profileID).Order("created_at desc").Find(&applications).Error; err != nil {
+	if err := config.DB.Preload("JobPost.Employer").Preload("Interview").Where("profile_id = ?", profileID).Order("created_at desc").Find(&applications).Error; err != nil {
 		return nil, fmt.Errorf("failed to fetch applications: %w", err)
 	}
 	return applications, nil
@@ -101,7 +101,7 @@ func GetJobApplicants(jobID uint, employerID uuid.UUID, page int, limit int) ([]
 	}
 
 	// Then, get the paginated results
-	if err := config.DB.Preload("Profile").Where("job_post_id = ?", jobID).Order("created_at desc").Limit(limit).Offset(offset).Find(&applications).Error; err != nil {
+	if err := config.DB.Preload("Profile").Preload("Interview").Where("job_post_id = ?", jobID).Order("created_at desc").Limit(limit).Offset(offset).Find(&applications).Error; err != nil {
 		return nil, 0, fmt.Errorf("failed to fetch job applications: %w", err)
 	}
 

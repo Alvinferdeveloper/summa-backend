@@ -11,6 +11,7 @@ type JobApplication struct {
 	ResumeURLAtApplication string `json:"resume_url_at_application" gorm:"column:resume_url_at_application"`
 
 	// Relationships
-	Profile Profile `json:"profile,omitempty"`
-	JobPost JobPost `json:"job_post,omitempty"`
+	Profile   Profile    `json:"profile,omitempty"`
+	JobPost   JobPost    `json:"job_post,omitempty"`
+	Interview *Interview `json:"interview,omitempty" gorm:"foreignKey:JobApplicationID"`
 }

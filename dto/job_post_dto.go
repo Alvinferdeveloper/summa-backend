@@ -31,6 +31,8 @@ type JobPostResponse struct {
 	UpdatedAt          time.Time                   `json:"updated_at"`
 	Title              string                      `json:"title"`
 	Location           string                      `json:"location"`
+	Latitude           float64                     `json:"latitude"`
+	Longitude          float64                     `json:"longitude"`
 	IsUrgent           bool                        `json:"is_urgent"`
 	WorkModel          WorkModelDTO                `json:"work_model"`
 	WorkSchedule       WorkScheduleDTO             `json:"work_schedule"`
@@ -78,6 +80,8 @@ func ConvertJobPostToDTO(jobPost models.JobPost) JobPostResponse {
 		UpdatedAt:       jobPost.UpdatedAt,
 		Title:           jobPost.Title,
 		Location:        jobPost.Location,
+		Latitude:        jobPost.Latitude,
+		Longitude:       jobPost.Longitude,
 		IsUrgent:        jobPost.IsUrgent,
 		WorkModel:       ConvertWorkModelToDTO(jobPost.WorkModel),
 		WorkSchedule:    ConvertWorkScheduleToDTO(jobPost.WorkSchedule),

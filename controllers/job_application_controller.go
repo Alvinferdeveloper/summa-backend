@@ -4,7 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/Alvinferdeveloper/summa-backend/config"
 	"github.com/Alvinferdeveloper/summa-backend/dto"
+	"github.com/Alvinferdeveloper/summa-backend/models"
 	"github.com/Alvinferdeveloper/summa-backend/services"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -46,14 +48,17 @@ func ApplyToJob(c *gin.Context) {
 
 func GetMyApplications(c *gin.Context) {
 	userID, _ := c.Get("user_id")
+	status := c.Query("status")
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 
-	profile, err := services.GetFullProfile(userID.(uuid.UUID))
-	if err != nil {
+	var profile models.Profile
+	if err := config.DB.Where("user_id = ?", userID).First(&profile).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Perfil de candidato no encontrado"})
 		return
 	}
 
-	applications, err := services.GetMyApplications(profile.ID)
+	applications, total, err := services.GetMyApplications(profile.ID, status, page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -64,7 +69,12 @@ func GetMyApplications(c *gin.Context) {
 		applicationDTOs = append(applicationDTOs, dto.ConvertJobApplicationToDTO(app))
 	}
 
-	c.JSON(http.StatusOK, applicationDTOs)
+	c.JSON(http.StatusOK, gin.H{
+		"data":  applicationDTOs,
+		"total": total,
+		"page":  page,
+		"limit": limit,
+	})
 }
 
 func GetJobApplicants(c *gin.Context) {

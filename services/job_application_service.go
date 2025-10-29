@@ -73,12 +73,33 @@ func CreateJobApplication(profile *models.Profile, jobID uint, coverLetter strin
 	return application, nil
 }
 
-func GetMyApplications(profileID uint) ([]models.JobApplication, error) {
+func GetMyApplications(profileID uint, status string, page int, limit int) ([]models.JobApplication, int64, error) {
 	var applications []models.JobApplication
-	if err := config.DB.Preload("JobPost.Employer").Preload("Interview").Where("profile_id = ?", profileID).Order("created_at desc").Find(&applications).Error; err != nil {
-		return nil, fmt.Errorf("failed to fetch applications: %w", err)
+	var total int64
+	offset := (page - 1) * limit
+
+	query := config.DB.Model(&models.JobApplication{}).Where("profile_id = ?", profileID)
+
+	if status != "" && status != "Todas" {
+		query = query.Where("status = ?", status)
 	}
-	return applications, nil
+
+	// Contar el total de registros que coinciden con el filtro
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, fmt.Errorf("failed to count applications: %w", err)
+	}
+
+	// Obtener los registros paginados
+	query = config.DB.Preload("JobPost.Employer").Preload("Interview").Where("profile_id = ?", profileID)
+	if status != "" && status != "Todas" {
+		query = query.Where("status = ?", status)
+	}
+
+	if err := query.Order("created_at desc").Limit(limit).Offset(offset).Find(&applications).Error; err != nil {
+		return nil, 0, fmt.Errorf("failed to fetch applications: %w", err)
+	}
+
+	return applications, total, nil
 }
 
 func GetJobApplicants(jobID uint, employerID uuid.UUID, page int, limit int) ([]models.JobApplication, int64, error) {

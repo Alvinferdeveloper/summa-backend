@@ -13,15 +13,21 @@ import (
 	"gorm.io/gorm"
 )
 
+var GlobalNotificationService *NotificationService
+
 func ScheduleInterview(employerID uuid.UUID, req *dto.ScheduleInterviewRequest) (*models.Interview, error) {
 	var application models.JobApplication
-	if err := config.DB.Joins("JOIN job_posts ON job_posts.id = job_applications.job_post_id").Where("job_applications.id = ? AND job_posts.employer_id = ?", req.JobApplicationID, employerID).First(&application).Error; err != nil {
+	if err := config.DB.
+		Joins("JOIN job_posts ON job_posts.id = job_applications.job_post_id").
+		Preload("Profile").
+		Where("job_applications.id = ? AND job_posts.employer_id = ?", req.JobApplicationID, employerID).
+		First(&application).Error; err != nil {
+
 		if err == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf("postulación no encontrada o no autorizada")
 		}
 		return nil, err
 	}
-
 	interview := models.Interview{
 		JobApplicationID: req.JobApplicationID,
 		ScheduledAt:      req.ScheduledAt,
@@ -38,6 +44,17 @@ func ScheduleInterview(employerID uuid.UUID, req *dto.ScheduleInterviewRequest) 
 		return nil, err
 	}
 
+	go func() {
+		notification := models.Notification{
+			UserID:  &application.Profile.UserID,
+			Message: fmt.Sprintf("Has sido invitado a una entrevista para el puesto de '%s' en %s.", application.JobPost.Title, application.JobPost.Employer.CompanyName),
+			Link:    "/applications",
+		}
+		if err := GlobalNotificationService.CreateNotification(notification); err != nil {
+			log.Printf("Failed to create interview schedule notification: %v", err)
+		}
+	}()
+
 	return &interview, nil
 }
 
@@ -50,8 +67,7 @@ func RespondToInterview(profileID uint, interviewID uint, req *dto.RespondToInte
 		return nil, err
 	}
 
-	interview.CandidateResponseStatus = req.Status
-	interview.RequestedAccommodations = req.RequestedAccommodations
+	employerID := interview.JobApplication.JobPost.EmployerID
 
 	if err := config.DB.Save(&interview).Error; err != nil {
 		return nil, err
@@ -80,6 +96,15 @@ func RespondToInterview(profileID uint, interviewID uint, req *dto.RespondToInte
 
 		if err := GlobalRabbitMQService.PublishEmailTask(task); err != nil {
 			log.Printf("Failed to publish interview response email task: %v", err)
+		}
+
+		notification := models.Notification{
+			EmployerID: &employerID,
+			Message:    fmt.Sprintf("%s ha respondido a la invitación de entrevista para '%s'.", interview.JobApplication.Profile.FirstName, interview.JobApplication.JobPost.Title),
+			Link:       "/jobs",
+		}
+		if err := GlobalNotificationService.CreateNotification(notification); err != nil {
+			log.Printf("Failed to create interview response notification: %v", err)
 		}
 	}()
 

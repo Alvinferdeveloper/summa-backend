@@ -42,6 +42,8 @@ func main() {
 	hub := websocket.NewHub()
 	go hub.Run()
 
+	services.GlobalNotificationService = services.NewNotificationService(hub)
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
@@ -85,6 +87,7 @@ func main() {
 		routes.SetupDashboardRoutes(v1)
 		routes.SetupCompatibilityRoutes(v1)
 		routes.SetupInterviewRoutes(v1)
+		routes.SetupNotificationRoutes(v1)
 	}
 
 	r.GET("/ping", func(c *gin.Context) {

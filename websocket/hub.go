@@ -9,6 +9,8 @@ import (
 	"github.com/Alvinferdeveloper/summa-backend/services"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+
+	"github.com/Alvinferdeveloper/summa-backend/dto" // Importacion del DTO
 )
 
 const (
@@ -28,6 +30,7 @@ var upgrader = websocket.Upgrader{
 }
 
 type IncomingMessage struct {
+	Type           string    `json:"type"` // "chat" o cualquier otro tipo que venga del frontend
 	ConversationID uint      `json:"conversation_id"`
 	RecipientID    uuid.UUID `json:"recipient_id"`
 	RecipientType  string    `json:"recipient_type"`
@@ -100,6 +103,43 @@ func (h *Hub) Run() {
 	}
 }
 
+func (h *Hub) BroadcastToUser(userID string, payload []byte) {
+	// Envolver el payload en un WebSocketMessage con tipo "notification"
+	wsMessage := dto.WebSocketMessage{
+		Type:    "notification",
+		Payload: json.RawMessage(payload), // Usar RawMessage para el payload ya marshalizado
+	}
+	message, err := json.Marshal(wsMessage)
+	if err != nil {
+		log.Printf("Error marshalling WebSocket notification message: %v", err)
+		return
+	}
+
+	if clients, ok := h.clients["job_seeker"]; ok {
+		if client, ok := clients[uuid.MustParse(userID)]; ok {
+			select {
+			case client.send <- message:
+			default:
+				close(client.send)
+				delete(h.clients["job_seeker"], client.UserID)
+			}
+			return
+		}
+	}
+
+	if clients, ok := h.clients["employer"]; ok {
+		if client, ok := clients[uuid.MustParse(userID)]; ok {
+			select {
+			case client.send <- message:
+			default:
+				close(client.send)
+				delete(h.clients["employer"], client.UserID)
+			}
+			return
+		}
+	}
+}
+
 func (c *Client) readPump() {
 	defer func() {
 		c.Hub.unregister <- c
@@ -118,31 +158,50 @@ func (c *Client) readPump() {
 			break
 		}
 
-		var msg IncomingMessage
-		if err := json.Unmarshal(messageBytes, &msg); err != nil {
-			log.Printf("error unmarshalling message: %v", err)
+		var wsIncomingMessage dto.WebSocketMessage
+		if err := json.Unmarshal(messageBytes, &wsIncomingMessage); err != nil {
+			log.Printf("error unmarshalling incoming WebSocket message: %v", err)
 			continue
 		}
 
-		// Save message to DB
-		dbMessage, err := services.CreateMessage(msg.ConversationID, c.UserID, c.UserType, msg.RecipientID, msg.RecipientType, msg.Content)
+		payloadBytes, err := json.Marshal(wsIncomingMessage.Payload)
 		if err != nil {
-			log.Printf("error saving message to db: %v", err)
+			log.Printf("error marshalling payload to bytes: %v", err)
 			continue
 		}
 
-		outgoingBytes, err := json.Marshal(dbMessage)
-		if err != nil {
-			log.Printf("error marshalling outgoing message: %v", err)
-			continue
-		}
+		if wsIncomingMessage.Type == "chat" {
+			var msg IncomingMessage
+			if err := json.Unmarshal(payloadBytes, &msg); err != nil {
+				log.Printf("error unmarshalling chat payload: %v", err)
+				continue
+			}
 
-		privateMessage := &PrivateMessage{
-			RecipientID:   msg.RecipientID,
-			RecipientType: msg.RecipientType,
-			Message:       outgoingBytes,
+			dbMessage, err := services.CreateMessage(msg.ConversationID, c.UserID, c.UserType, msg.RecipientID, msg.RecipientType, msg.Content)
+			if err != nil {
+				log.Printf("error saving message to db: %v", err)
+				continue
+			}
+
+			outgoingChat := dto.WebSocketMessage{
+				Type:    "chat",
+				Payload: dbMessage,
+			}
+			outgoingBytes, err := json.Marshal(outgoingChat)
+			if err != nil {
+				log.Printf("error marshalling outgoing chat message: %v", err)
+				continue
+			}
+
+			privateMessage := &PrivateMessage{
+				RecipientID:   msg.RecipientID,
+				RecipientType: msg.RecipientType,
+				Message:       outgoingBytes,
+			}
+			c.Hub.private <- privateMessage
+		} else {
+			log.Printf("Received unhandled WebSocket message type: %s", wsIncomingMessage.Type)
 		}
-		c.Hub.private <- privateMessage
 	}
 }
 

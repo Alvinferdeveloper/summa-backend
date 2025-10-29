@@ -94,6 +94,7 @@ func AuthMiddleware(allowedRoles ...string) gin.HandlerFunc {
 				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Invalid or unsupported role"})
 				return
 			}
+			c.Set("user_type", role)
 
 			c.Next()
 		} else {

@@ -1,23 +1,29 @@
-
-FROM golang:1.25-alpine
+# ---- Build stage ----
+FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
 
-# Copy go.mod and go.sum files to download dependencies
-COPY go.mod ./go.mod
-COPY go.sum ./go.sum
-
-# Download dependencies
+COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy the rest of the application source code
 COPY . .
 
-# Build the Go application
-RUN go build -o main ./cmd/main.go
+# Compile the application for Linux
+# CGO_ENABLED=0 is important for static builds
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/main.go
 
-# Expose port 8080
+# ---- Final stage ----
+# Use a minimal base image
+FROM alpine:latest
+
+WORKDIR /root/
+
+# Copy the compiled binary from the build stage
+COPY --from=builder /app/main .
+
+# Copy email templates and other assets if needed at runtime
+COPY --from=builder /app/templates ./templates
+
 EXPOSE 8080
 
-# Command to run the executable
 CMD ["./main"]

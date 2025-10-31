@@ -131,3 +131,25 @@ func UpdateApplicationStatus(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Estado de la postulación actualizado", "application": application})
 }
+
+func GetAllJobApplicants(c *gin.Context) {
+	employerID, _ := c.Get("employer_id")
+	jobID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de empleo inválido"})
+		return
+	}
+
+	applications, err := services.GetAllJobApplicants(uint(jobID), employerID.(uuid.UUID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	var applicationDTOs []dto.JobApplicationResponse
+	for _, app := range applications {
+		applicationDTOs = append(applicationDTOs, dto.ConvertJobApplicationToDTO(app))
+	}
+
+	c.JSON(http.StatusOK, applicationDTOs)
+}

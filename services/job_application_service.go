@@ -129,6 +129,23 @@ func GetJobApplicants(jobID uint, employerID uuid.UUID, page int, limit int) ([]
 	return applications, total, nil
 }
 
+func GetAllJobApplicants(jobID uint, employerID uuid.UUID) ([]models.JobApplication, error) {
+	var jobPost models.JobPost
+	if err := config.DB.Where("id = ? AND employer_id = ?", jobID, employerID).First(&jobPost).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, fmt.Errorf("job post not found or does not belong to employer")
+		}
+		return nil, fmt.Errorf("error verifying job post: %w", err)
+	}
+
+	var applications []models.JobApplication
+	if err := config.DB.Preload("Profile").Preload("Interview").Where("job_post_id = ?", jobID).Order("created_at desc").Find(&applications).Error; err != nil {
+		return nil, fmt.Errorf("failed to fetch job applications: %w", err)
+	}
+
+	return applications, nil
+}
+
 func UpdateApplicationStatus(applicationID uint, employerID uuid.UUID, status string) (*models.JobApplication, error) {
 	var application models.JobApplication
 	if err := config.DB.Preload("JobPost.Employer").Preload("Profile").First(&application, applicationID).Error; err != nil {

@@ -58,7 +58,7 @@ func GetNotifications(c *gin.Context) {
 			return
 		}
 
-		var notificationResponses []dto.NotificationResponse
+		notificationResponses := make([]dto.NotificationResponse, 0)
 		for _, notification := range notifications {
 			notificationResponses = append(notificationResponses, dto.ConvertNotificationToNotificationResponse(notification))
 		}

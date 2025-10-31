@@ -39,7 +39,12 @@ func GetNotifications(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener notificaciones"})
 			return
 		}
-		c.JSON(http.StatusOK, notifications)
+
+		notificationResponses := make([]dto.NotificationResponse, 0)
+		for _, notification := range notifications {
+			notificationResponses = append(notificationResponses, dto.ConvertNotificationToNotificationResponse(notification))
+		}
+		c.JSON(http.StatusOK, notificationResponses)
 
 	case "employer":
 		employerIDVal, ok := c.Get("employer_id")

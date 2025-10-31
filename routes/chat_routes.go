@@ -10,9 +10,12 @@ func SetupChatRoutes(router *gin.RouterGroup) {
 	chatRoutes := router.Group("/chat")
 	{
 		authMiddleware := middlewares.AuthMiddleware("job_seeker", "employer")
-
-		chatRoutes.GET("/conversations", authMiddleware, controllers.GetConversations)
-		chatRoutes.POST("/conversations/with/:otherParticipantId", authMiddleware, controllers.GetOrCreateConversation)
-		chatRoutes.GET("/conversations/:conversationId/messages", authMiddleware, controllers.GetMessagesForConversation)
+		conversationRoutes := chatRoutes.Group("/conversations")
+		{
+			conversationRoutes.GET("", authMiddleware, controllers.GetConversations)
+			conversationRoutes.POST("/with/:otherParticipantId", authMiddleware, controllers.GetOrCreateConversation)
+			conversationRoutes.GET("/:conversationId/messages", authMiddleware, controllers.GetMessagesForConversation)
+			conversationRoutes.POST("/:conversationId/mark-as-read", authMiddleware, controllers.MarkConversationAsRead)
+		}
 	}
 }

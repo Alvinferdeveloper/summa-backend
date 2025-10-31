@@ -24,9 +24,10 @@ type ConversationResponseDTO struct {
 	EmployerID uuid.UUID       `json:"employer_id"`
 	User       UserSummary     `json:"user"`
 	Employer   EmployerSummary `json:"employer"`
+	UnreadCount int64           `json:"unread_count"`
 }
 
-func ConvertConversationToDTO(conversation models.Conversation) *ConversationResponseDTO {
+func ConvertConversationToDTO(conversation models.Conversation, unreadCount int64) *ConversationResponseDTO {
 	return &ConversationResponseDTO{
 		ID:         conversation.ID,
 		EmployerID: conversation.EmployerID,
@@ -43,5 +44,6 @@ func ConvertConversationToDTO(conversation models.Conversation) *ConversationRes
 			Email:       conversation.Employer.Email,
 			LogoURL:     conversation.Employer.LogoURL,
 		},
+		UnreadCount: unreadCount,
 	}
 }

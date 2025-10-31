@@ -18,18 +18,13 @@ func GetConversations(c *gin.Context) {
 		return
 	}
 
-	conversations, err := services.GetConversations(participantID, participantType)
+	conversationsDTO, err := services.GetConversations(participantID, participantType)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve conversations"})
 		return
 	}
 
-	var dtoConversations []dto.ConversationResponseDTO
-	for _, conversation := range conversations {
-		dtoConversations = append(dtoConversations, *dto.ConvertConversationToDTO(conversation))
-	}
-
-	c.JSON(http.StatusOK, gin.H{"data": dtoConversations})
+	c.JSON(http.StatusOK, gin.H{"data": conversationsDTO})
 }
 
 func GetOrCreateConversation(c *gin.Context) {
@@ -65,7 +60,7 @@ func GetOrCreateConversation(c *gin.Context) {
 		return
 	}
 
-	conversationDTO := dto.ConvertConversationToDTO(*conversation)
+	conversationDTO := dto.ConvertConversationToDTO(*conversation, 0)
 
 	c.JSON(http.StatusOK, gin.H{"data": conversationDTO})
 }
@@ -98,4 +93,37 @@ func GetMessagesForConversation(c *gin.Context) {
 		"page":  page,
 		"limit": limit,
 	})
+}
+
+func MarkConversationAsRead(c *gin.Context) {
+	userType, _ := c.Get("user_type")
+	var userID uuid.UUID
+	if userType == "job_seeker" {
+		if val, exists := c.Get("user_id"); exists {
+			userID = val.(uuid.UUID)
+		} else {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "user_id no encontrado"})
+			return
+		}
+	} else {
+		if val, exists := c.Get("employer_id"); exists {
+			userID = val.(uuid.UUID)
+		} else {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "employer_id no encontrado"})
+			return
+		}
+	}
+
+	conversationID, err := strconv.Atoi(c.Param("conversationId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de conversación inválido"})
+		return
+	}
+
+	if err := services.MarkConversationAsRead(uint(conversationID), userID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al marcar la conversación como leída"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Conversación marcada como leída"})
 }

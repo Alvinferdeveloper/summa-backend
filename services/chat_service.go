@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Alvinferdeveloper/summa-backend/config"
+	"github.com/Alvinferdeveloper/summa-backend/dto"
 	"github.com/Alvinferdeveloper/summa-backend/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -34,7 +35,7 @@ func GetOrCreateConversation(userID, employerID uuid.UUID) (*models.Conversation
 	return &conversation, nil
 }
 
-func GetConversations(participantID uuid.UUID, participantType string) ([]models.Conversation, error) {
+func GetConversations(participantID uuid.UUID, participantType string) ([]dto.ConversationResponseDTO, error) {
 	var conversations []models.Conversation
 	var query *gorm.DB
 
@@ -47,8 +48,18 @@ func GetConversations(participantID uuid.UUID, participantType string) ([]models
 		return nil, fmt.Errorf("invalid participant type")
 	}
 
-	err := query.Preload("User.Profile").Preload("Employer").Order("updated_at desc").Find(&conversations).Error
-	return conversations, err
+	if err := query.Preload("User.Profile").Preload("Employer").Order("updated_at desc").Find(&conversations).Error; err != nil {
+		return nil, err
+	}
+
+	var conversationDTOs []dto.ConversationResponseDTO
+	for _, conv := range conversations {
+		var unreadCount int64
+		config.DB.Model(&models.Message{}).Where("conversation_id = ? AND recipient_id = ? AND read = ?", conv.ID, participantID, false).Count(&unreadCount)
+		conversationDTOs = append(conversationDTOs, *dto.ConvertConversationToDTO(conv, unreadCount))
+	}
+
+	return conversationDTOs, nil
 }
 
 func GetMessagesForConversation(conversationID uint, page, limit int) ([]models.Message, int64, error) {
@@ -90,4 +101,8 @@ func CreateMessage(conversationID uint, senderID uuid.UUID, senderType string, r
 	}
 
 	return &message, nil
+}
+
+func MarkConversationAsRead(conversationID uint, userID uuid.UUID) error {
+	return config.DB.Model(&models.Message{}).Where("conversation_id = ? AND recipient_id = ?", conversationID, userID).Update("read", true).Error
 }

@@ -6,24 +6,26 @@ import (
 )
 
 type CandidateResponseDTO struct {
-	ID                     uuid.UUID   `json:"id"`
-	FirstName              string `json:"first_name"`
-	LastName               string `json:"last_name"`
-	PhoneNumber            string `json:"phone_number"`
-	City                   string `json:"city"`
-	Country                string `json:"country"`
-	ProfilePictureURL      string `json:"profile_picture_url"`
-	BannerURL              string `json:"banner_url"`
-	Address                string `json:"address"`
-	LinkedIn               string `json:"linked_in"`
-	ResumeURL              string `json:"resume_url"`
-	Description            string `json:"description"`
-	DetailedAccommodations string `json:"detailed_accommodations"`
+	ID                     uuid.UUID `json:"id"`
+	ProfileID              uint      `json:"profile_id"`
+	FirstName              string    `json:"first_name"`
+	LastName               string    `json:"last_name"`
+	PhoneNumber            string    `json:"phone_number"`
+	City                   string    `json:"city"`
+	Country                string    `json:"country"`
+	ProfilePictureURL      string    `json:"profile_picture_url"`
+	BannerURL              string    `json:"banner_url"`
+	Address                string    `json:"address"`
+	LinkedIn               string    `json:"linked_in"`
+	ResumeURL              string    `json:"resume_url"`
+	Description            string    `json:"description"`
+	DetailedAccommodations string    `json:"detailed_accommodations"`
 }
 
 func ConvertProfileToCandidateDTO(profile models.Profile) CandidateResponseDTO {
 	return CandidateResponseDTO{
 		ID:                     profile.UserID,
+		ProfileID:              profile.ID,
 		FirstName:              profile.FirstName,
 		LastName:               profile.LastName,
 		PhoneNumber:            profile.PhoneNumber,

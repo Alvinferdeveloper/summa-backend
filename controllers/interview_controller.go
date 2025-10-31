@@ -8,6 +8,7 @@ import (
 	"github.com/Alvinferdeveloper/summa-backend/dto"
 	"github.com/Alvinferdeveloper/summa-backend/models"
 	"github.com/Alvinferdeveloper/summa-backend/services"
+	"github.com/Alvinferdeveloper/summa-backend/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -57,4 +58,23 @@ func RespondToInterview(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, interview)
+}
+
+func DownloadICS(c *gin.Context) {
+	interviewID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de entrevista inválido"})
+		return
+	}
+
+	var interview models.Interview
+	if err := config.DB.Preload("JobApplication.JobPost.Employer").First(&interview, interviewID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Entrevista no encontrada"})
+		return
+	}
+
+	icsContent := utils.GenerateICSContent(interview)
+
+	c.Header("Content-Disposition", "attachment; filename=interview.ics")
+	c.Data(http.StatusOK, "text/calendar; charset=utf-8", []byte(icsContent))
 }

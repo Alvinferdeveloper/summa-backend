@@ -68,6 +68,8 @@ func RespondToInterview(profileID uint, interviewID uint, req *dto.RespondToInte
 	}
 
 	employerID := interview.JobApplication.JobPost.EmployerID
+	interview.RequestedAccommodations = req.RequestedAccommodations
+	interview.CandidateResponseStatus = req.Status
 
 	if err := config.DB.Save(&interview).Error; err != nil {
 		return nil, err

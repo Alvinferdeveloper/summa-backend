@@ -11,5 +11,6 @@ func SetupInterviewRoutes(router *gin.RouterGroup) {
 	{
 		interviews.POST("", middlewares.AuthMiddleware("employer"), controllers.ScheduleInterview)
 		interviews.PUT("/:id/respond", middlewares.AuthMiddleware("job_seeker"), controllers.RespondToInterview)
+		interviews.GET("/:id/download-ics", middlewares.AuthMiddleware("job_seeker", "employer"), controllers.DownloadICS)
 	}
 }

@@ -93,7 +93,8 @@ func main() {
 		admin.SetupDisabilityTypeRoutes(v1)
 		admin.SetupAccessibilityNeedRoutes(v1)
 		admin.SetupCategoryRoutes(v1)
-		admin.SetupContractTypeRoutes(v1) // Añadir rutas de admin para tipos de contrato
+		admin.SetupContractTypeRoutes(v1)
+		admin.SetupExperienceLevelRoutes(v1)
 	}
 
 	r.GET("/ping", func(c *gin.Context) {

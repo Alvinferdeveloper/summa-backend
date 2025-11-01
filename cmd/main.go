@@ -88,6 +88,7 @@ func main() {
 		routes.SetupCompatibilityRoutes(v1)
 		routes.SetupInterviewRoutes(v1)
 		routes.SetupNotificationRoutes(v1)
+		routes.SetupAdminAuthRoutes(v1) // Añadir rutas de autenticación de admin
 	}
 
 	r.GET("/ping", func(c *gin.Context) {

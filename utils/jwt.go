@@ -56,3 +56,26 @@ func GenerateEmployerJWT(employerID uuid.UUID, role string) (string, error) {
 
 	return t, nil
 }
+
+func GenerateAdminJWT(adminID uuid.UUID) (string, error) {
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		return "", fmt.Errorf("missing environment variable %q", "JWT_SECRET")
+	}
+
+	claims := jwt.MapClaims{
+		"admin_id": adminID,
+		"role":     "admin",
+		"exp":      time.Now().Add(time.Hour * 72).Unix(), // Token expires in 3 days
+		"iat":      time.Now().Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	t, err := token.SignedString([]byte(jwtSecret))
+	if err != nil {
+		return "", err
+	}
+
+	return t, nil
+}

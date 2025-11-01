@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-
+	"os"
 	"fmt"
 	"time"
 
@@ -46,8 +46,6 @@ func seedExperienceLevels() {
 	log.Println("Experience levels seeded.")
 }
 
-// ... (rest of the file)
-
 func seedAccessibleInfrastructures() {
 	infrastructures := []models.AccessibleInfrastructure{
 		{Name: "Rampas de acceso"},
@@ -82,6 +80,40 @@ func seedInclusivePrograms() {
 	log.Println("Inclusive programs seeded.")
 }
 
+func seedAdmins(db *gorm.DB) error {
+	fmt.Println("Seeding Admins...")
+	email := os.Getenv("ADMIN_EMAIL")
+	password := os.Getenv("ADMIN_PASSWORD")
+
+	if email == "" || password == "" {
+		log.Println("ADMIN_EMAIL or ADMIN_PASSWORD not set, skipping admin seed.")
+		return nil
+	}
+
+	var admin models.Admin
+	if err := db.Where("email = ?", email).First(&admin).Error; err != gorm.ErrRecordNotFound {
+		log.Println("Admin user already exists.")
+		return nil // Admin ya existe o hubo un error
+	}
+
+	hashedPassword, err := utils.HashPassword(password)
+	if err != nil {
+		return fmt.Errorf("could not hash admin password: %w", err)
+	}
+
+	newAdmin := models.Admin{
+		Email:    email,
+		Password: hashedPassword,
+	}
+
+	if err := db.Create(&newAdmin).Error; err != nil {
+		return fmt.Errorf("could not create admin user: %w", err)
+	}
+
+	log.Println("Admin user created successfully.")
+	return nil
+}
+
 func main() {
 	err := godotenv.Load() // Load .env file from current directory or parents
 	if err != nil {
@@ -101,6 +133,11 @@ func main() {
 
 func RunSeeder(db *gorm.DB) error {
 	fmt.Println("Starting database seeding...")
+
+	// Seed admin user first
+	if err := seedAdmins(db); err != nil {
+		return fmt.Errorf("failed to seed admins: %w", err)
+	}
 
 	// Clear existing data (optional, for clean runs)
 	// This should be used with caution in production!
@@ -407,8 +444,6 @@ func seedJobPosts(db *gorm.DB, employers []models.Employer, categories []models.
 	return nil
 }
 
-// ... (rest of the file)
-
 func seedWorkSchedules() {
 	schedules := []models.WorkSchedule{
 		{Name: "Tiempo completo"},
@@ -437,8 +472,6 @@ func seedWorkModels() {
 
 	log.Println("Work models seeded.")
 }
-
-// ... (rest of the file)
 
 func seedCategories(db *gorm.DB) ([]models.Category, error) {
 	fmt.Println("Seeding Categories...")

@@ -52,6 +52,7 @@ func MigrateDatabase() {
 		&models.Notification{},
 		&models.Conversation{},
 		&models.Message{},
+		&models.Admin{},
 	)
 	if err != nil {
 		log.Fatal("Failed to migrate database:", err)

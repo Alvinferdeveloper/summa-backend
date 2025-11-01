@@ -8,6 +8,7 @@ import (
 
 	"github.com/Alvinferdeveloper/summa-backend/config"
 	"github.com/Alvinferdeveloper/summa-backend/routes"
+	"github.com/Alvinferdeveloper/summa-backend/routes/admin"
 	"github.com/Alvinferdeveloper/summa-backend/services"
 	"github.com/Alvinferdeveloper/summa-backend/websocket"
 	"github.com/gin-contrib/cors"
@@ -88,7 +89,8 @@ func main() {
 		routes.SetupCompatibilityRoutes(v1)
 		routes.SetupInterviewRoutes(v1)
 		routes.SetupNotificationRoutes(v1)
-		routes.SetupAdminAuthRoutes(v1) // Añadir rutas de autenticación de admin
+		routes.SetupAdminAuthRoutes(v1)
+		admin.SetupDisabilityTypeRoutes(v1)
 	}
 
 	r.GET("/ping", func(c *gin.Context) {

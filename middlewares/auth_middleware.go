@@ -64,7 +64,7 @@ func AuthMiddleware(allowedRoles ...string) gin.HandlerFunc {
 				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to access this resource"})
 				return
 			}
-
+			println(role)
 			switch role {
 			case "job_seeker":
 				userID, ok := claims["user_id"].(string)
@@ -90,6 +90,18 @@ func AuthMiddleware(allowedRoles ...string) gin.HandlerFunc {
 					return
 				}
 				c.Set("employer_id", uid)
+			case "admin":
+				adminID, ok := claims["admin_id"].(string)
+				if !ok {
+					c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid admin_id in token"})
+					return
+				}
+				uid, err := uuid.Parse(adminID)
+				if err != nil {
+					c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid admin_id in token"})
+					return
+				}
+				c.Set("admin_id", uid)
 			default:
 				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Invalid or unsupported role"})
 				return

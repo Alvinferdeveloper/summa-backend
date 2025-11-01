@@ -92,6 +92,7 @@ func main() {
 		routes.SetupAdminAuthRoutes(v1)
 		admin.SetupDisabilityTypeRoutes(v1)
 		admin.SetupAccessibilityNeedRoutes(v1)
+		admin.SetupCategoryRoutes(v1)
 	}
 
 	r.GET("/ping", func(c *gin.Context) {

@@ -95,6 +95,7 @@ func main() {
 		admin.SetupCategoryRoutes(v1)
 		admin.SetupContractTypeRoutes(v1)
 		admin.SetupExperienceLevelRoutes(v1)
+		admin.SetupWorkModelRoutes(v1)
 	}
 
 	r.GET("/ping", func(c *gin.Context) {

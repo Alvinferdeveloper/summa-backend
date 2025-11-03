@@ -81,7 +81,7 @@ func GetMessagesForConversation(conversationID uint, page, limit int) ([]models.
 	return messages, total, nil
 }
 
-func CreateMessage(conversationID uint, senderID uuid.UUID, senderType string, recipientID uuid.UUID, recipientType string, content string) (*models.Message, error) {
+func CreateMessage(conversationID uint, senderID uuid.UUID, senderType string, recipientID uuid.UUID, recipientType string, content string) (*dto.MessageResponseDTO, error) {
 	message := models.Message{
 		ConversationID: conversationID,
 		SenderID:       senderID,
@@ -100,7 +100,9 @@ func CreateMessage(conversationID uint, senderID uuid.UUID, senderType string, r
 		return nil, err
 	}
 
-	return &message, nil
+	messageDto := dto.ConvertMessageToDTO(message)
+
+	return messageDto, nil
 }
 
 func MarkConversationAsRead(conversationID uint, userID uuid.UUID) error {

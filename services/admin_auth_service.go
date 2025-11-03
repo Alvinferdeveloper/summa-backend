@@ -15,7 +15,7 @@ func LoginAdmin(email string, password string) (string, error) {
 	}
 
 	if !utils.CheckPasswordHash(password, admin.Password) {
-		return "", errors.New("Credenciales inválidas")
+		return "", errors.New("credenciales inválidas")
 	}
 
 	token, err := utils.GenerateAdminJWT(admin.ID)

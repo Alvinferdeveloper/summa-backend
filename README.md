@@ -6,8 +6,7 @@ Summa es una plataforma de búsqueda de empleo diseñada para conectar a candida
 
 *El siguiente diagrama ilustra la arquitectura general del sistema, incluyendo los servicios principales, las bases de datos y cómo interactúan entre sí.*
 
-*(Aquí puedes insertar la imagen de la arquitectura del sistema. Ejemplo:)*
-`![Arquitectura del Sistema](assets/architecture.png)`
+![Arquitectura del Sistema](assets/architecture.png)
 
 ---
 

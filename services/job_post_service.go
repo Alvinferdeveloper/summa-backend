@@ -124,7 +124,7 @@ func GetJobPosts(page, limit int, userID *uuid.UUID, filters map[string]string) 
 		profileID = profile.ID
 	}
 
-	var jobPostDTOs []dto.JobPostResponse
+	var jobPostDTOs []dto.JobPostResponse = make([]dto.JobPostResponse, 0)
 	for _, jobPost := range jobPosts {
 		dto := dto.ConvertJobPostToDTO(jobPost)
 		if profileID != 0 {
@@ -152,13 +152,45 @@ func GetJobPostById(id uint) (*models.JobPost, error) {
 
 func GetJobPostsByEmployerID(employerID uuid.UUID) ([]dto.JobPostResponse, error) {
 	var jobPosts []models.JobPost
-	if err := config.DB.Where("employer_id = ?", employerID).Preload("WorkModel").Order("created_at desc").Find(&jobPosts).Error; err != nil {
+	if err := config.DB.Where("employer_id = ?", employerID).
+		Preload("WorkModel").
+		Order("created_at desc").
+		Find(&jobPosts).Error; err != nil {
 		return nil, fmt.Errorf("failed to fetch employer job posts: %w", err)
+	}
+
+	// Obtener los IDs de los job posts
+	var jobPostIDs []uint
+	for _, jp := range jobPosts {
+		jobPostIDs = append(jobPostIDs, jp.ID)
+	}
+
+	// Conteo de aplicantes por job post
+	type ApplicantsCount struct {
+		JobPostID uint
+		Count     int64
+	}
+	var counts []ApplicantsCount
+	if len(jobPostIDs) > 0 {
+		if err := config.DB.Model(&models.JobApplication{}).
+			Select("job_post_id, COUNT(*) as count").
+			Where("job_post_id IN ?", jobPostIDs).
+			Group("job_post_id").
+			Find(&counts).Error; err != nil {
+			return nil, fmt.Errorf("failed to count job applications: %w", err)
+		}
+	}
+
+	countsMap := make(map[uint]int64)
+	for _, c := range counts {
+		countsMap[c.JobPostID] = c.Count
 	}
 
 	var jobPostDTOs []dto.JobPostResponse
 	for _, jobPost := range jobPosts {
-		jobPostDTOs = append(jobPostDTOs, dto.ConvertJobPostToDTO(jobPost))
+		dto := dto.ConvertJobPostToDTO(jobPost)
+		dto.ApplicantCount = countsMap[jobPost.ID]
+		jobPostDTOs = append(jobPostDTOs, dto)
 	}
 
 	return jobPostDTOs, nil
